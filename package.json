@@ -11,6 +11,6 @@
     "track:modified": "npm run list:modified | xargs -r npm run track"
   },
   "devDependencies": {
-    "open-terms-archive": "git+https://git@github.com/ambanum/OpenTermsArchive#main"
+    "open-terms-archive": "git+https://git@github.com/ambanum/OpenTermsArchive#artifacts"
   }
 }
