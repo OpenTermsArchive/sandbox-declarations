@@ -1,0 +1,12 @@
+{
+  "name": "Huawei",
+  "documents": {
+    "Imprint": {
+      "fetch": "https://developer.huawei.com/consumer/en/doc/start/agreement-0000001052728169",
+      "select": [
+        "#body39451090"
+      ],
+      "executeClientScripts": true
+    }
+  }
+}
