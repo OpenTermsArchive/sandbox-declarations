@@ -2,7 +2,10 @@
   "name": "Geizhals",
   "documents": {
     "Commercial Terms": {
-      "fetch": "https://unternehmen.geizhals.at/allgemeine-geschaeftsbedingungen/"
+      "fetch": "https://unternehmen.geizhals.at/allgemeine-geschaeftsbedingungen/",
+      "select": [
+        ".elementor-element-ddedd04"
+      ]
     }
   }
 }
