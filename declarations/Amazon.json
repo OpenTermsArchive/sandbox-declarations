@@ -1,0 +1,15 @@
+{
+  "name": "Amazon",
+  "documents": {
+    "Marketplace Sellers Conditions": {
+      "fetch": "https://sellercentral.amazon.fr/help/hub/reference/external/201190440?locale=en-US",
+      "select": [
+        "#full-help-page"
+      ],
+      "remove": [
+        "*[hidden]"
+      ],
+      "executeClientScripts": true
+    }
+  }
+}
