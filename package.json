@@ -4,11 +4,10 @@
   "scripts": {
     "lint": "ota-lint-declarations",
     "test": "ota-validate-declarations",
-    "list:modified": "git diff --name-only HEAD $(git merge-base HEAD origin/main) -- ./declarations/ | grep -v .history | grep -v .filters | sed 's/declarations\\///g' | sed 's/.json//g' | sed 's/.*/\"&\"/'",
     "test:schema": "npm run test -- --schema-only",
-    "test:modified": "npm run list:modified | xargs -r npm test",
+    "test:modified": "git diff --name-only HEAD $(git merge-base HEAD origin/main) -- ./declarations/ | grep -v .history | grep -v .filters | sed 's/declarations\\///g' | sed 's/.json//g' | sed 's/.*/\"&\"/' | xargs -r npm test",
     "track": "ota-track",
-    "track:modified": "npm run list:modified | xargs -r npm run track"
+    "track:modified": "git diff --name-only HEAD $(git merge-base HEAD origin/main) -- ./declarations/ | grep -v .history | grep -v .filters | sed 's/declarations\\///g' | sed 's/.json//g' | sed 's/.*/\"&\"/' | xargs -r npm run track"
   },
   "devDependencies": {
     "open-terms-archive": "git+https://git@github.com/ambanum/OpenTermsArchive#main"
