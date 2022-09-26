@@ -1,0 +1,11 @@
+{
+  "name": "Mailjet2",
+  "documents": {
+    "undefined": {
+      "fetch": "https://www.mailjet.com/privacy-policy/",
+      "select": [
+        ".StyledDiv-sc-ajm81g-0"
+      ]
+    }
+  }
+}
