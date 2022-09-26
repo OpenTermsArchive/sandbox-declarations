@@ -4,7 +4,8 @@
     "undefined": {
       "fetch": "https://www.mailjet.com/privacy-policy/",
       "select": [
-        ".StyledDiv-sc-ajm81g-0"
+        ".StyledDiv-sc-ajm81g-0",
+        ".StyledDiv-sc-1tkx9jw-0"
       ]
     }
   }
