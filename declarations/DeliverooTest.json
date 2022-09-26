@@ -1,0 +1,14 @@
+{
+  "name": "DeliverooTest",
+  "documents": {
+    "Trackers Policy": {
+      "fetch": "https://deliveroo.ie/cookies",
+      "select": [
+        {
+          "startBefore": "[class^=\"StaticPage-\"] h2:first-child",
+          "endBefore": "#page-footer"
+        }
+      ]
+    }
+  }
+}
