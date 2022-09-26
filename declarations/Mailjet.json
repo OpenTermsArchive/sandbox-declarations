@@ -4,11 +4,7 @@
     "Privacy Policy": {
       "fetch": "https://www.mailjet.com/privacy-policy/",
       "select": [
-        ".section-content"
-      ],
-      "remove": [
-        ".footer",
-        ".subfooter"
+        ".StyledDiv-sc-ajm81g-0"
       ]
     },
     "Terms of Service": {
@@ -23,4 +19,3 @@
     }
   }
 }
-
