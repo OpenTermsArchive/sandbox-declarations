@@ -4,7 +4,7 @@
     "Terms of Service": {
       "fetch": "https://www.allocab.com/informations/conditions-generales-de-service/",
       "select": [
-        ".px-24"
+        "[class*=\"navbar\"] + div"
       ]
     }
   }
