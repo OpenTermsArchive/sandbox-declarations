@@ -1,0 +1,15 @@
+{
+  "name": "Comptoir des Cotonniers",
+  "documents": {
+    "Privacy Policy": {
+      "fetch": "https://www.comptoirdescotonniers.com/politique-protection-donnees-personnelles-cookies-2021-c317old.html",
+      "select": [
+        "#primary",
+        "b"
+      ],
+      "remove": [
+        ".special-element:nth-child(1)"
+      ]
+    }
+  }
+}
