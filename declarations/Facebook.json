@@ -4,7 +4,7 @@
     "Vulnerability Disclosure Policy": {
       "fetch": "https://www.facebook.com/legal/EU_data_transfer_addendum",
       "select": [
-        "div[role=mai]"
+        "div[role=main]"
       ],
       "remove": [
         {
