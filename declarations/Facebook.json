@@ -10,7 +10,8 @@
         {
           "startBefore": "[role=\"separator\"]",
           "endAfter": "body"
-        }
+        },
+        ".xyorhqc:nth-child(3) > .x193iq5w"
       ],
       "executeClientScripts": true
     }
