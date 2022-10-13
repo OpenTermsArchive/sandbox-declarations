@@ -8,7 +8,7 @@
       ],
       "remove": [
         {
-          "startBefore": "[role=\"separator\"]:first-child",
+          "startBefore": "[role=\"separator\"]",
           "endAfter": "body"
         }
       ],
