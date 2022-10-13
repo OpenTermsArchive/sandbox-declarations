@@ -27,6 +27,20 @@
       ],
       "executeClientScripts": true,
       "validUntil": "2022-10-13T12:56:41Z"
+    },
+    {
+      "fetch": "https://www.facebook.com/legal/EU_data_transfer_addendum",
+      "select": [
+        "div[role=main]"
+      ],
+      "remove": [
+        {
+          "startBefore": "[role=\"separator\"]:first-child",
+          "endAfter": "body"
+        }
+      ],
+      "executeClientScripts": true,
+      "validUntil": "to-be-determined"
     }
   ]
 }
