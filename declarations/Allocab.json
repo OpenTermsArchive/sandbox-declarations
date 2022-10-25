@@ -3,11 +3,10 @@
   "documents": {
     "Terms of Service": {
       "fetch": "https://www.allocab.com/informations/conditions-generales-de-service/",
-      "select": {
-        "startAfter": "#particulier",
-        "endBefore": "#entreprise"
-      }
+      "select": [
+        "h1",
+        "h1 + p"
+      ]
     }
   }
 }
-
