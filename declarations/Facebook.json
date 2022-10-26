@@ -12,6 +12,9 @@
           "endAfter": "body"
         }
       ],
+      "filter": [
+        "test"
+      ],
       "executeClientScripts": true
     }
   }
