@@ -6,18 +6,6 @@ on:
     types: [ opened, reopened ]
 
 jobs:
-  validate_schema:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-      - run: npm install
-      - run: npm run test:schema
-
   validate_modified_declarations:
     runs-on: ubuntu-latest
     steps:
