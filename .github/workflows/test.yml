@@ -14,10 +14,10 @@ jobs:
         with:
           ref: main
           fetch-depth: 0 # fetch all history for all branches and tags
-      - name: Get Git branch name
+      - name: Get branch name
         run: |-
-          echo $GITHUB_SHA
-          echo $(git branch --contains $GITHUB_SHA)
+          echo $GITHUB_HEAD_REF
+          echo ${{ github.event.pull_request.head.ref }}
 
 
 
