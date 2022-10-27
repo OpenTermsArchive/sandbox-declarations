@@ -21,10 +21,19 @@ jobs:
   validate_modified_declarations:
     runs-on: ubuntu-latest
     steps:
+      - uses: hmarr/debug-action@v2
+      - name: Get Git branch name
+        run: |
+          if [ -z $GITHUB_HEAD_REF ]; then BRANCH=$GITHUB_HEAD_REF; else BRANCH=GITHUB_REF"; fi
+          echo "::set-env name=BRANCH::$(echo ${BRANCH})"
+      - name: Echo Branch name
+        run: echo from BRANCH:$BRANCH
       - uses: actions/checkout@v2
         with:
           ref: main
-      - uses: actions/checkout@v2
+          fetch-depth: 0 # fetch all history for all branches and tags
+       - uses: actions/checkout@v2
+      - run: git checkout --force -B $BRANCH refs/remotes/origin/$BRANCH
       - uses: actions/setup-node@v2
         with:
           node-version: 16
