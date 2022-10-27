@@ -24,9 +24,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: main
-          fetch-depth: 0 # fetch all history for all branches and tags
-      # Checkout current branch. This way we have both main and current branch and a diff can be performed
-      - run: git checkout --force -B $GITHUB_HEAD_REF refs/remotes/origin/$GITHUB_HEAD_REF
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: 16
