@@ -19,9 +19,15 @@ jobs:
   validate_modified_declarations:
     runs-on: ubuntu-latest
     steps:
+      - name: Get branch name
+        run: |
+          if [ -z $GITHUB_HEAD_REF ]; then BRANCH=$GITHUB_REF_NAME; else BRANCH=$GITHUB_HEAD_REF; fi
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          ref: main
+          fetch-depth: 0 # fetch all history for all branches and tags
+      - run: git checkout --force -B $BRANCH refs/remotes/origin/$BRANCH
       - uses: actions/setup-node@v2
         with:
           node-version: 16
