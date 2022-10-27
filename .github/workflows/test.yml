@@ -9,16 +9,27 @@ jobs:
   validate_modified_declarations:
     runs-on: ubuntu-latest
     steps:
-      - name: Branch name
-        run: echo running on branch ${GITHUB_REF##*/}
       - uses: actions/checkout@v2
         with:
           ref: main
           fetch-depth: 0 # fetch all history for all branches and tags
-      # Checkout current branch. This way we have both main and current branch and a diff can be performed
-      - run: git checkout --force -B $GITHUB_REF_NAME refs/remotes/origin/$GITHUB_REF_NAME
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 16
-      - run: npm install
-      - run: npm run test:modified
+      - uses: hmarr/debug-action@v2
+      # - name: Github context
+      #   run: echo "${{ toJson(github) }}"
+      - name: Set Branch name
+        run: |
+          BRANCH=$(git branch --contains $GITHUB_SHA)
+          
+          echo "::set-env name=STAGE::$(echo ${BRANCH})"
+      - name: Echo Branch name
+        run: echo Deleting from STAGE:$STAGE
+      # - run: echo "GITHUB_REF_NAME $GITHUB_REF_NAME"
+      # - run: echo "GITHUB_REF_TYPE $GITHUB_REF_TYPE"
+      
+      # # Checkout current branch. This way we have both main and current branch and a diff can be performed
+      # - run: git checkout --force -B $GITHUB_REF_NAME refs/remotes/origin/$GITHUB_REF_NAME
+      # - uses: actions/setup-node@v2
+      #   with:
+      #     node-version: 16
+      # - run: npm install
+      # - run: npm run test:modified
