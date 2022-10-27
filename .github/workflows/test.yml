@@ -13,20 +13,22 @@ jobs:
         with:
           ref: main
           fetch-depth: 0 # fetch all history for all branches and tags
-      - uses: hmarr/debug-action@v2
-      # - name: Github context
-      #   run: echo "${{ toJson(github) }}"
-      - name: Set Branch name
-        run: |
-          BRANCH=$(git branch --contains $GITHUB_SHA)
-          
-          echo "::set-env name=STAGE::$(echo ${BRANCH})"
-      - name: Echo Branch name
-        run: echo Deleting from STAGE:$STAGE
-      # - run: echo "GITHUB_REF_NAME $GITHUB_REF_NAME"
-      # - run: echo "GITHUB_REF_TYPE $GITHUB_REF_TYPE"
-      
+      - name: Get Git branch name
+        run: |-
+          echo $GITHUB_SHA
+          echo $(git branch --contains $GITHUB_SHA)
+
+
+
       # # Checkout current branch. This way we have both main and current branch and a diff can be performed
+      # - name: Set Branch name
+      #   run: |
+      #     BRANCH=$(git branch --contains $GITHUB_SHA)
+      #     echo "${{ github.repository }} has ${BRANCH} branch"
+      #     echo "::set-env name=STAGE::$(echo ${BRANCH})"
+      # - name: Echo Branch name
+      #   run: echo Deleting from STAGE:$STAGE
+      
       # - run: git checkout --force -B $GITHUB_REF_NAME refs/remotes/origin/$GITHUB_REF_NAME
       # - uses: actions/setup-node@v2
       #   with:
