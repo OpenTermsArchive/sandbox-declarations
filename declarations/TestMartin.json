@@ -4,7 +4,7 @@
     "Acceptable Use Policy": {
       "fetch": "https://www.linkedin.com/help/linkedin/answer/137374",
       "select": [
-        ".global-header__nav-wrapper--desktop223"
+        ".global-header__nav-wrapper--desktop3"
       ]
     }
   }
