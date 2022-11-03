@@ -1,0 +1,11 @@
+{
+  "name": "TestMartin",
+  "documents": {
+    "Brand Guidelines": {
+      "fetch": "https://www.paypal.com/cz/webapps/mpp/ua/privacy-full",
+      "select": [
+        ".row-fluid > .containerCentered"
+      ]
+    }
+  }
+}
