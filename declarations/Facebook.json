@@ -13,6 +13,19 @@
         }
       ],
       "executeClientScripts": true
+    },
+    "Commercial Terms": {
+      "fetch": "https://www.facebook.com/legal/commercial_terms",
+      "select": [
+        {
+          "startBefore": "div[role=main]",
+          "endBefore": "[role=\"separator\"]:first-child"
+        }
+      ],
+      "filter": [
+        "cleanUrls"
+      ],
+      "executeClientScripts": true
     }
   }
 }
