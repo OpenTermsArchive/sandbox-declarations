@@ -1,0 +1,11 @@
+{
+  "name": "TestMartin",
+  "documents": {
+    "Ad Publishing Policy": {
+      "fetch": "https://www.paypal.com/cz/webapps/mpp/ua/legalhub-full?locale.x=en_CZ",
+      "select": [
+        "p:nth-child(4)"
+      ]
+    }
+  }
+}
