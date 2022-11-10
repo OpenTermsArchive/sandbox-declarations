@@ -2,9 +2,9 @@
   "name": "TestMartin",
   "documents": {
     "Brand Guidelines": {
-      "fetch": "https://www.paypal.com/cz/webapps/mpp/ua/privacy-full",
+      "fetch": "https://www.linkedin.com/help/linkedin/answer/137369",
       "select": [
-        ".row-fluid > .containerCentered2"
+        ".desktop-nav"
       ]
     }
   }
