@@ -1,0 +1,9 @@
+{
+  "Privacy Policy": [
+    {
+      "fetch": "https://opentermsarchive.org/fr/privacy-policy",
+      "select": ".TextContent_textContent__ToW2S",
+      "validUntil": "to-be-determined"
+    }
+  ]
+}
