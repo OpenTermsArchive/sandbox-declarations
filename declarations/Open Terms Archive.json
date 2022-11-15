@@ -2,8 +2,13 @@
   "name": "Open Terms Archive",
   "documents": {
     "Privacy Policy": {
-      "fetch": "https://opentermsarchive.org/fr/privacy-policy",
-      "select": ".TextContent_textContent__ToW2S"
+      "fetch": "https://opentermsarchive.org/privacy-policy",
+      "select": [
+        {
+          "startBefore": "h1",
+          "endBefore": "footer"
+        }
+      ]
     },
     "Imprint": {
       "fetch": "https://opentermsarchive.org/fr/legal-notice",
