@@ -1,0 +1,15 @@
+{
+  "name": "ToS;DR",
+  "documents": {
+    "Privacy Policy": {
+      "fetch": "https://docs.tosdr.org/sp/tosdr.org-Privacy-Policy.89456373.html",
+      "select": [
+        "#article-content > .grid-x"
+      ],
+      "remove": [
+        ".breadcrumbs",
+        "#tableOverlay"
+      ]
+    }
+  }
+}
