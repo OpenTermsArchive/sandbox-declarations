@@ -6,7 +6,7 @@ updates:
       # Available options: daily, weekly or monthly
       interval: "daily"
       # Random by default, have to be formated by hh:mm
-      time: "11:21"
+      time: "11:26"
       # Check the list of tz time zones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       timezone: "Europe/Paris"
     # Allow updates for Open Terms Archive engine
@@ -14,6 +14,6 @@ updates:
       - dependency-name: "@opentermsarchive/engine"
     # Add reviewers: that could be an individual reviewers with GitHub username or teams of reviewers with full team name (including the organization)
     reviewers:
-      - "@OpenTermsArchive/sandbox"
+      - "OpenTermsArchive/sandbox"
     # Allow 3 open pull requests for dependencies (5 by default)
     open-pull-requests-limit: 3
