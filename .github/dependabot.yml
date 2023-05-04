@@ -6,7 +6,7 @@ updates:
       # Available options: daily, weekly or monthly
       interval: "daily"
       # Random by default, have to be formated by hh:mm
-      time: "15:01"
+      time: "15:10"
       # Check the list of tz time zones: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       timezone: "Europe/Paris"
     # Allow updates for Open Terms Archive engine
