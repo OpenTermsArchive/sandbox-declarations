@@ -1,0 +1,11 @@
+{
+  "name": "Writesonic",
+  "documents": {
+    "Terms of Service": {
+      "fetch": "https://writesonic.com/terms",
+      "select": [
+        ".content_terms"
+      ]
+    }
+  }
+}
