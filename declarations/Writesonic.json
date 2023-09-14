@@ -1,0 +1,15 @@
+{
+  "name": "Writesonic",
+  "documents": {
+    "Privacy Policy": {
+      "fetch": "https://writesonic.com/privacy-policy",
+      "select": [
+        ".hero_block_title",
+        ".section_info_terms_privacy"
+      ],
+      "remove": [
+        ".link_terms_block"
+      ]
+    }
+  }
+}
