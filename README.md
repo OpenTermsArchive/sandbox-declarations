@@ -10,7 +10,7 @@ You can [explore the tracked versions](https://github.com/OpenTermsArchive/sandb
 
 The documents declared in this repository are:
 
-- ...
+- Language: <!-- this will be replaced -->English
 
 ## Contributing
 
