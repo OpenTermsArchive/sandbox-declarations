@@ -1,0 +1,14 @@
+{
+  "name": "TikTok",
+  "documents": {
+    "Terms of Service": {
+      "fetch": "https://www.tiktok.com/legal/page/eea/terms-of-service/en",
+      "select": [
+        "#policy-card"
+      ],
+      "remove": [
+        ".inline-flex"
+      ]
+    }
+  }
+}
