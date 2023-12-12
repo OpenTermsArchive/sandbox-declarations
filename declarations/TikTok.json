@@ -4,10 +4,10 @@
     "Terms of Service": {
       "fetch": "https://www.tiktok.com/legal/page/eea/terms-of-service/en",
       "select": [
-        "#policy-card"
+        ".pt-16"
       ],
       "remove": [
-        ".inline-flex"
+        ".lang-selection"
       ]
     }
   }
