@@ -2,7 +2,7 @@
   "name": "Brevo",
   "documents": {
     "Privacy Policy": {
-      "fetch": "https://www.brevo.com/legal/privacypolicy/",
+      "fetch": "https://www.brevo.com/legal/unknown/",
       "select": "main"
     }
   }
