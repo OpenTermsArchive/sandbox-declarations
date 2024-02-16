@@ -1,5 +1,5 @@
 {
-  "name": "demo",
+  "name": "sandbox",
   "services": {
     "repository": "https://github.com/OpenTermsArchive/sandbox-declarations.git",
     "declarationsPath": "./declarations"
