@@ -1,0 +1,11 @@
+{
+  "name": "Facebook",
+  "documents": {
+    "Terms of Service": {
+      "fetch": "https://www.facebook.com/legal/terms",
+      "select": [
+        "._1rf2"
+      ]
+    }
+  }
+}
