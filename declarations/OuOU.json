@@ -1,0 +1,11 @@
+{
+  "name": "OuOU",
+  "documents": {
+    "Business Mediation Policy": {
+      "fetch": "https://openai.com/policies/terms-of-use",
+      "select": [
+        ".mt-spacing-7 p:nth-child(3)"
+      ]
+    }
+  }
+}
