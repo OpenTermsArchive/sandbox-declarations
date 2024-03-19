@@ -4,7 +4,7 @@
     "Terms of Service": {
       "fetch": "https://www.tiktok.com/legal/page/row/terms-of-service/en",
       "select": [
-        "#policy-card"
+        ".policy-title"
       ]
     }
   }
