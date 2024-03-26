@@ -1,0 +1,11 @@
+{
+  "name": "Midjourney",
+  "documents": {
+    "Terms of Service": {
+      "fetch": "https://docs.midjourney.com/docs/terms-of-service",
+      "select": [
+        ".content_block_text:nth-child(4)"
+      ]
+    }
+  }
+}
