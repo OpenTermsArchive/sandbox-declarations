@@ -1,0 +1,11 @@
+{
+  "name": "OTA",
+  "documents": {
+    "Privacy Policy": {
+      "fetch": "https://opentermsarchive.org/privacy-policy",
+      "select": [
+        ".TextContent_textContent__ToW2S"
+      ]
+    }
+  }
+}
