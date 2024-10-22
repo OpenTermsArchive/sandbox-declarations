@@ -1,0 +1,11 @@
+{
+  "name": "ProtonMail",
+  "documents": {
+    "Terms of Service": {
+      "fetch": "https://proton.me/legal/terms",
+      "select": [
+        ".rich-text"
+      ]
+    }
+  }
+}
