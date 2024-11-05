@@ -1,0 +1,11 @@
+{
+  "name": "audio pro",
+  "documents": {
+    "Terms of Service": {
+      "fetch": "https://us.audiopro.com/en/new-terms-and-conditions/",
+      "select": [
+        ".page-template-default"
+      ]
+    }
+  }
+}
