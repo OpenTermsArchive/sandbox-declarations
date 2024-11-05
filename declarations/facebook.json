@@ -1,0 +1,12 @@
+{
+  "name": "facebook",
+  "documents": {
+    "Terms of Service": {
+      "fetch": "https://www.facebook.com/legal/terms?_rdr",
+      "select": [
+        "._1rf2",
+        "#data_use_policy"
+      ]
+    }
+  }
+}
