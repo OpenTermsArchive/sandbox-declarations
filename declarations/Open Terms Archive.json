@@ -6,8 +6,10 @@
       "select": ".TextContent_textContent__ToW2S"
     },
     "Imprint": {
-      "fetch": "https://opentermsarchive.org/legal-notice",
-      "select": ".TextContent_textContent__ToW2S"
+      "fetch": "https://opentermsarchive.org/en/legal-notice",
+      "select": [
+        ".textcontent"
+      ]
     }
   }
 }
