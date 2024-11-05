@@ -1,0 +1,9 @@
+{
+  "Imprint": [
+    {
+      "fetch": "https://opentermsarchive.org/legal-notice",
+      "select": ".TextContent_textContent__ToW2S",
+      "validUntil": "to-be-determined"
+    }
+  ]
+}
