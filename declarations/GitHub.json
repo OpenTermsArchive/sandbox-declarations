@@ -3,7 +3,12 @@
   "documents": {
     "Privacy Policy": {
       "fetch": "https://docs.github.com/en/free-pro-team@latest/github/site-policy/github-privacy-statement",
-      "select": "#article-contents"
+      "select": [
+        "#article-contents"
+      ],
+      "remove": [
+        "#\\:Rfb6n6\\:--label"
+      ]
     },
     "Terms of Service": {
       "fetch": "https://docs.github.com/en/free-pro-team@latest/github/site-policy/github-terms-of-service",
