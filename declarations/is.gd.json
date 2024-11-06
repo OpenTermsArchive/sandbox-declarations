@@ -5,7 +5,8 @@
       "fetch": "https://is.gd/terms.php",
       "select": [
         "#main"
-      ]
+      ],
+      "executeClientScripts": true
     }
   }
 }
