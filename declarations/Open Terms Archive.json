@@ -6,9 +6,9 @@
       "select": ".TextContent_textContent__ToW2S"
     },
     "Imprint": {
-      "fetch": "https://opentermsarchive.org/en/legal-notice",
+      "fetch": "https://opentermsarchive.org/fr/mentions-legales/",
       "select": [
-        ".textcontent"
+        ".container--109"
       ]
     }
   }
