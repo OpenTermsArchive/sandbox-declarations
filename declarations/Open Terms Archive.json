@@ -6,8 +6,10 @@
       "select": ".textcontent"
     },
     "Imprint": {
-      "fetch": "https://opentermsarchive.org/en/legal-notice",
-      "select": ".textcontent"
+      "fetch": "https://opentermsarchive.org/fr/mentions-legales/",
+      "select": [
+        ".textcontent"
+      ]
     },
     "Accessibility Statement": {
       "fetch": "https://opentermsarchive.org/en/accessibility/",
