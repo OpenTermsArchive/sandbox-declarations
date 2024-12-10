@@ -21,6 +21,11 @@
       "fetch": "https://opentermsarchive.org/legal-notice",
       "select": ".textcontent",
       "validUntil": "2024-04-19T12:30:14Z"
+    },
+    {
+      "fetch": "https://opentermsarchive.org/en/legal-notice",
+      "select": ".textcontent",
+      "validUntil": "to-be-determined"
     }
   ]
 }
