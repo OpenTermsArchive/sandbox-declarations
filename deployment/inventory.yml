@@ -2,5 +2,5 @@ all:
   hosts:
     51.75.169.235:
       ansible_user: debian
-      ed25519_fingerprint: AAAAC3NzaC1lZDI1NTE5AAAAIJHjAFAupkAxzMGUh9RNyVL6Nh3bdVcsBU/FpgwwvIr1
+      ed25519_fingerprint: AAAAC3NzaC1lZDI1NTE5AAAAIPDwGOiDzGP5Jz50kRSqLztRY1lgD2Y38C6/Z7jj54Wi
       ota_source_repository: https://github.com/OpenTermsArchive/sandbox-declarations.git
