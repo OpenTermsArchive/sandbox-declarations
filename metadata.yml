@@ -5,10 +5,10 @@ description: |
   The **Demo** collection tracks changes to the terms of use for a subset of services used by Open Terms Archive.
 
   This enables Open Terms Archive core team to be users of the software it produces and providing a reference collection.
-dataset: https://github.com/OpenTermsArchive/demo-versions/releases
-declarations: https://github.com/OpenTermsArchive/demo-declarations
-versions: https://github.com/OpenTermsArchive/demo-versions
-snapshots: https://github.com/OpenTermsArchive/demo-snapshots
+dataset: https://github.com/OpenTermsArchive/sandbox-versions/releases
+declarations: https://github.com/OpenTermsArchive/sandbox-declarations
+versions: https://github.com/OpenTermsArchive/sandbox-versions
+snapshots: https://github.com/OpenTermsArchive/sandbox-snapshots
 donations: https://opencollective.com/opentermsarchive
 logo: https://opentermsarchive.org/images/collections/demo.png
 languages: [en]
