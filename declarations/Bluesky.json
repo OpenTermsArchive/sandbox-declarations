@@ -1,0 +1,11 @@
+{
+  "name": "Bluesky",
+  "terms": {
+    "Terms of Service": {
+      "fetch": "https://bsky.social/about/support/tos",
+      "select": [
+        ".bg-white-blue"
+      ]
+    }
+  }
+}
