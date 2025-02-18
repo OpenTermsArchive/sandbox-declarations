@@ -1,0 +1,12 @@
+{
+  "name": "Corsica Ferries",
+  "terms": {
+    "Imprint": {
+      "fetch": "https://www.corsica-ferries.fr/mentions-legales.html",
+      "select": [
+        ".block-text-border"
+      ],
+      "executeClientScripts": true
+    }
+  }
+}
