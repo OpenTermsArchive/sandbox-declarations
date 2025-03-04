@@ -1,0 +1,12 @@
+{
+  "name": "cursor",
+  "terms": {
+    "Terms of Service": {
+      "fetch": "https://www.cursor.com/terms-of-service",
+      "select": [
+        ".\\[\\&_h1\\]\\:text-brand-foreground",
+        ".\\[\\&\\>\\*\\:first-child\\]\\:mt-0:nth-child(3)"
+      ]
+    }
+  }
+}
