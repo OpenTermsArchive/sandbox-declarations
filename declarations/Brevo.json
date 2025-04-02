@@ -4,7 +4,7 @@
     "Privacy Policy": {
       "fetch": "https://www.brevo.com/legal/privacypolicy/",
       "select": [
-        "#page-content"
+        ".dist_marketing-header__nav__3Crhs"
       ]
     }
   }
