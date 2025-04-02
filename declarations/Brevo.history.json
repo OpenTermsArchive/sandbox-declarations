@@ -1,0 +1,9 @@
+{
+  "Privacy Policy": [
+    {
+      "fetch": "https://www.brevo.com/legal/privacypolicy/",
+      "select": "main",
+      "validUntil": "2024-02-16T15:57:36Z"
+    }
+  ]
+}
