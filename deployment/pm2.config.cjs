@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'ota',
+      name: 'ota-demo-tracking',
       script: 'npm',
       args: 'run start:schedule',
       max_restarts: 2,
@@ -10,7 +10,7 @@ module.exports = {
       log_date_format: "YYYY-MM-DDTHH:mm:ssZ"
     },
     {
-      name: 'ota-collection-api',
+      name: 'ota-demo-collection-api',
       script: 'npm',
       args: 'run start:collection-api',
       min_uptime: '10s',
@@ -20,7 +20,7 @@ module.exports = {
       log_date_format: "YYYY-MM-DDTHH:mm:ssZ"
     },
     {
-      name: 'ota-release',
+      name: 'ota-demo-release',
       script: 'npm',
       args: 'run dataset:schedule',
       min_uptime: '10s',
