@@ -1,0 +1,11 @@
+{
+  "name": "sqdf",
+  "terms": {
+    "Brand Guidelines": {
+      "fetch": "https://www.amazon.fr/gp/help/customer/display.html?nodeId=GLSBYFE9MGKKQXXM",
+      "select": [
+        "#GUID-602FA6E8-D724-4317-89F6-E78834F9BA58"
+      ]
+    }
+  }
+}
