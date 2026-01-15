@@ -1,0 +1,11 @@
+{
+  "name": "AMZ",
+  "terms": {
+    "Data Controller Agreement": {
+      "fetch": "https://www.amazon.fr/gp/help/customer/display.html?nodeId=GLSBYFE9MGKKQXXM",
+      "select": [
+        ".cs-help-content"
+      ]
+    }
+  }
+}
