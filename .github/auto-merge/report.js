@@ -43,11 +43,16 @@ for (const decision of decisions) {
     continue;
   }
 
-  await setStatus(github, decision.headSha, {
-    state: passed ? 'success' : waiting ? 'pending' : 'failure',
-    description: outcome.slice(0, DESCRIPTION_LIMIT),
-    targetUrl: runUrl,
-  });
+  try {
+    await setStatus(github, decision.headSha, {
+      state: passed ? 'success' : waiting ? 'pending' : 'failure',
+      description: outcome.slice(0, DESCRIPTION_LIMIT),
+      targetUrl: runUrl,
+    });
+  } catch (error) {
+    console.error(`#${decision.number}: status not set (${error.message})`);
+    process.exitCode = 1;
+  }
 }
 
 if (process.env.GITHUB_STEP_SUMMARY) {
