@@ -45,14 +45,14 @@ jobs:
       - name: Apply the rules
         env:
           TIERS: ${{ vars.AUTO_MERGE_TIERS }}
-        run: node .github/auto-merge/gate.mjs --pulls pulls.json --tiers "$TIERS" --output decisions.json
+        run: node .github/auto-merge/gate.js --pulls pulls.json --tiers "$TIERS" --output decisions.json
       - name: Select the pull requests to validate
         id: select
         env:
           GITHUB_TOKEN: ${{ github.token }}
           LIMIT: ${{ vars.AUTO_MERGE_VALIDATION_LIMIT || '10' }}
           RETRY: ${{ inputs.retry && '--retry' || '' }}
-        run: echo "selected=$(node .github/auto-merge/select.mjs --decisions decisions.json --limit "$LIMIT" $RETRY)" >> "$GITHUB_OUTPUT"
+        run: echo "selected=$(node .github/auto-merge/select.js --decisions decisions.json --limit "$LIMIT" $RETRY)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: decisions
@@ -87,7 +87,7 @@ jobs:
       - name: Validate with the engine of main
         env:
           PULL: ${{ matrix.pull.number }}
-        run: node .github/auto-merge/validate.mjs --decisions decisions.json --pull "$PULL"
+        run: node .github/auto-merge/validate.js --decisions decisions.json --pull "$PULL"
 
   report:
     needs: [ evaluate, validate ]
@@ -111,7 +111,7 @@ jobs:
       - name: Set the status of each pull request
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node .github/auto-merge/report.mjs --decisions decisions.json
+        run: node .github/auto-merge/report.js --decisions decisions.json
 
   merge:
     needs: [ evaluate, validate ]
@@ -146,4 +146,4 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           MERGE_TOKEN: ${{ steps.app.outputs.token }}
           LIMIT: ${{ vars.AUTO_MERGE_LIMIT || '2' }}
-        run: node .github/auto-merge/merge.mjs --decisions decisions.json --limit "$LIMIT"
+        run: node .github/auto-merge/merge.js --decisions decisions.json --limit "$LIMIT"

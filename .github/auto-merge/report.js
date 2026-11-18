@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 
-import { MERGEABLE_TIERS } from './gate.mjs';
-import { createGitHub, STATUS_CONTEXT, VALIDATION_FAILURE, validationConclusions, validationJobName } from './github.mjs';
+import { MERGEABLE_TIERS } from './gate.js';
+import { createGitHub, STATUS_CONTEXT, VALIDATION_FAILURE, validationConclusions, validationJobName } from './github.js';
 
 const DESCRIPTION_LIMIT = 140;
 

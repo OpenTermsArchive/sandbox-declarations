@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { checkLocation, classify, createGit, evaluate, parseStrictJSON, Refusal } from './gate.mjs';
+import { checkLocation, classify, createGit, evaluate, parseStrictJSON, Refusal } from './gate.js';
 
 const NOW = new Date('2026-11-18T00:00:00Z');
 const CONFIG = { sharedHosts: ['shared.example'], limits: {} };

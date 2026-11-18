@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 
-import { createGitHub, STATUS_CONTEXT, VALIDATION_FAILURE } from './github.mjs';
+import { createGitHub, STATUS_CONTEXT, VALIDATION_FAILURE } from './github.js';
 
 const { values: options } = parseArgs({
   options: {

@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { createGit, evaluate } from './gate.mjs';
-import { createGitHub, validationConclusions, validationJobName } from './github.mjs';
+import { createGit, evaluate } from './gate.js';
+import { createGitHub, validationConclusions, validationJobName } from './github.js';
 
 const MERGED_LABEL = 'auto-merged';
 
