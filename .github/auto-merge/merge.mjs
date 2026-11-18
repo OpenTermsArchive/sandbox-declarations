@@ -75,15 +75,24 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
     continue;
   }
 
-  const review = await merger.post(`/repos/{repository}/pulls/${decision.number}/reviews`, { commit_id: decision.headSha, event: 'APPROVE' });
+  let review;
 
   try {
+    review = await merger.post(`/repos/{repository}/pulls/${decision.number}/reviews`, { commit_id: decision.headSha, event: 'APPROVE' });
     // The title and the message are written here because those of the pull request are free text: "[skip ci]" in them would keep the merge from being deployed
     await merger.put(`/repos/{repository}/pulls/${decision.number}/merge`, { sha: decision.headSha, merge_method: 'squash', commit_title: title, commit_message: message });
   } catch (error) {
-    await merger.put(`/repos/{repository}/pulls/${decision.number}/reviews/${review.id}/dismissals`, { message: 'The automatic merge failed.', event: 'DISMISS' });
-    console.log(`#${decision.number}: merge refused (${error.message})`);
-    continue;
+    // An error does not prove that nothing happened: a merge whose answer was lost must not be reported as refused, nor leave an approval behind when it did fail
+    const { merged: mergedAnyway } = await reader.get(`/repos/{repository}/pulls/${decision.number}`).catch(() => ({}));
+
+    if (!mergedAnyway) {
+      if (review) {
+        await merger.put(`/repos/{repository}/pulls/${decision.number}/reviews/${review.id}/dismissals`, { message: 'The automatic merge failed.', event: 'DISMISS' }).catch(dismissalError => console.log(`#${decision.number}: approval not dismissed (${dismissalError.message})`));
+      }
+
+      console.log(`#${decision.number}: merge refused (${error.message})`);
+      continue;
+    }
   }
 
   merged++;

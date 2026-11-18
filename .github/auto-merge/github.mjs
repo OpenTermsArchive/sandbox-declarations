@@ -1,10 +1,11 @@
 const API = 'https://api.github.com';
+const ATTEMPTS = 3;
 
 export const STATUS_CONTEXT = 'auto-merge';
 export const VALIDATION_FAILURE = 'validation failure';
 
 export function createGitHub({ token, repository }) {
-  async function request(method, path, body) {
+  async function request(method, path, body, attempt = 1) {
     const response = await fetch(path.startsWith('http') ? path : `${API}${path.replace('{repository}', repository)}`, {
       method,
       headers: {
@@ -15,6 +16,13 @@ export function createGitHub({ token, repository }) {
       },
       body: body && JSON.stringify(body),
     });
+
+    // GitHub now and then answers with a server error to a request that succeeds when sent again
+    if (response.status >= 500 && attempt < ATTEMPTS) {
+      await new Promise(resolve => { setTimeout(resolve, attempt * 3000); });
+
+      return request(method, path, body, attempt + 1);
+    }
 
     if (!response.ok) {
       const error = new Error(`${method} ${path}: ${response.status} ${(await response.text()).slice(0, 300)}`);
