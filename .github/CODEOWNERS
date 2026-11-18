@@ -1,0 +1,5 @@
+# Everything needs the approval of a maintainer…
+* @clementbiron
+
+# …except declarations, which have no owner so that the auto-merge workflow can approve them. Filters are code and stay owned.
+/declarations/*.json
