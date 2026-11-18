@@ -55,7 +55,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           LIMIT: ${{ vars.AUTO_MERGE_VALIDATION_LIMIT || '10' }}
           RETRY: ${{ inputs.retry && '--retry' || '' }}
-        run: echo "selected=$(node .github/auto-merge/select.js --decisions decisions.json --limit "$LIMIT" $RETRY)" >> "$GITHUB_OUTPUT"
+        # The assignment on its own line makes the step fail when select.js fails, which an echo would hide
+        run: |
+          selected=$(node .github/auto-merge/select.js --decisions decisions.json --limit "$LIMIT" $RETRY)
+          echo "selected=$selected" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: decisions
