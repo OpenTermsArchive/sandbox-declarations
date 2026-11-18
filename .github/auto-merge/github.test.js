@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it, mock } from 'node:test';
 
-import { createGitHub, setStatus, STATUS_CONTEXT } from './github.js';
+import { createGitHub, ownApproval, setStatus, STATUS_CONTEXT } from './github.js';
 
 const github = createGitHub({ token: 'token', repository: 'owner/repository' });
 
@@ -53,6 +53,27 @@ describe('github', () => {
       await setStatus(fake, 'sha', status);
 
       assert.equal(fake.post.mock.callCount(), 1);
+    });
+  });
+
+  describe('approvals of the merging application', () => {
+    const own = { login: 'ota-auto-merge[bot]', sha: 'head' };
+    const review = (state, { login = own.login, sha = own.sha } = {}) => ({ id: state, state, user: { login }, commit_id: sha });
+
+    it('finds no approval on a commit never approved', () => {
+      assert.deepEqual(ownApproval([], own), { failedBefore: false, approval: undefined });
+    });
+
+    it('reuses an approval that is still there, so as not to approve twice', () => {
+      assert.deepEqual(ownApproval([review('APPROVED')], own), { failedBefore: false, approval: review('APPROVED') });
+    });
+
+    it('tells that merging the commit already failed when its approval was dismissed', () => {
+      assert.equal(ownApproval([review('DISMISSED')], own).failedBefore, true);
+    });
+
+    it('ignores the reviews of others and those of other commits', () => {
+      assert.deepEqual(ownApproval([ review('DISMISSED', { login: 'maintainer' }), review('DISMISSED', { sha: 'previous' }) ], own), { failedBefore: false, approval: undefined });
     });
   });
 });

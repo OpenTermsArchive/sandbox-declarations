@@ -66,6 +66,13 @@ export async function setStatus(github, sha, { state, description, targetUrl }) 
   await github.post(`/repos/{repository}/statuses/${sha}`, { context: STATUS_CONTEXT, state, description, target_url: targetUrl });
 }
 
+// The merge job dismisses its approval when a merge fails: a dismissed approval of a commit means that merging it already failed
+export function ownApproval(reviews, { login, sha }) {
+  const ownReviews = reviews.filter(({ user, commit_id: commitId }) => user?.login === login && commitId === sha);
+
+  return { failedBefore: ownReviews.some(({ state }) => state === 'DISMISSED'), approval: ownReviews.find(({ state }) => state === 'APPROVED') };
+}
+
 export function validationJobName(pullRequestNumber) {
   return `validate (#${pullRequestNumber})`;
 }

@@ -148,5 +148,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           MERGE_TOKEN: ${{ steps.app.outputs.token }}
+          MERGE_BOT: ${{ steps.app.outputs.app-slug }}[bot]
           LIMIT: ${{ vars.AUTO_MERGE_LIMIT || '2' }}
         run: node .github/auto-merge/merge.js --decisions decisions.json --limit "$LIMIT"

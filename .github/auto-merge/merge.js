@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { createGit, evaluate, invalidatesValidation } from './gate.js';
-import { createGitHub, validationConclusions, validationJobName } from './github.js';
+import { createGitHub, ownApproval, validationConclusions, validationJobName } from './github.js';
 
 const MERGED_LABEL = 'auto-merged';
 
@@ -55,6 +55,8 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
   }
 
   // Earlier merges of this run moved main, and the pull request may have changed since it was evaluated: nothing decided before this point is taken for granted
+  let review;
+
   try {
     const pullRequest = await reader.get(`/repos/{repository}/pulls/${decision.number}`);
 
@@ -73,6 +75,15 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
       console.log(`#${decision.number}: main changed since the validation, left for the next run`);
       continue;
     }
+
+    const { failedBefore, approval } = ownApproval(await reader.list(`/repos/{repository}/pulls/${decision.number}/reviews?per_page=100`), { login: process.env.MERGE_BOT, sha: decision.headSha });
+
+    if (failedBefore) {
+      console.log(`#${decision.number}: merging this commit already failed, left for a new commit or a maintainer`);
+      continue;
+    }
+
+    review = approval;
   } catch (error) {
     console.log(`#${decision.number}: could not be checked again (${error.message})`);
     process.exitCode = 1;
@@ -88,10 +99,8 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
     continue;
   }
 
-  let review;
-
   try {
-    review = await merger.post(`/repos/{repository}/pulls/${decision.number}/reviews`, { commit_id: decision.headSha, event: 'APPROVE' });
+    review ??= await merger.post(`/repos/{repository}/pulls/${decision.number}/reviews`, { commit_id: decision.headSha, event: 'APPROVE' });
     // The title and the message are written here because those of the pull request are free text: "[skip ci]" in them would keep the merge from being deployed
     await merger.put(`/repos/{repository}/pulls/${decision.number}/merge`, { sha: decision.headSha, merge_method: 'squash', commit_title: title, commit_message: message });
   } catch (error) {
