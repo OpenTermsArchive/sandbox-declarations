@@ -1,0 +1,9 @@
+{
+  "name": "Brand New Service",
+  "terms": {
+    "Terms of Service": {
+      "fetch": "https://example.com/",
+      "select": "body"
+    }
+  }
+}
