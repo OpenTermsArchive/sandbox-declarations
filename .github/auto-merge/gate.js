@@ -6,7 +6,7 @@ import { parseArgs } from 'node:util';
 
 export const TIERS = [ 'P1', 'P2', 'P3', 'P4' ];
 
-// P3 and P4 are only recognised: no rule vouches for them yet, so they can never be switched on
+// P3 and P4 are only recognised: no rule vouches for them, so they are left to a maintainer
 export const MERGEABLE_TIERS = [ 'P1', 'P2' ];
 
 const DECLARATION_PATH = /^declarations\/([^/]+)\.json$/;
@@ -463,7 +463,7 @@ function checkFiles({ changes, mainTree, limits }) {
   return { services };
 }
 
-export function evaluate({ pullRequest, git, config, enabledTiers, mainRef = 'refs/remotes/origin/main', now = new Date() }) {
+export function evaluate({ pullRequest, git, config, mainRef = 'refs/remotes/origin/main', now = new Date() }) {
   const limits = { ...DEFAULT_LIMITS, ...config.limits };
   const result = { number: pullRequest.number, headSha: pullRequest.head?.sha, tier: null, services: [], files: [] };
 
@@ -528,7 +528,7 @@ export function evaluate({ pullRequest, git, config, enabledTiers, mainRef = 're
       }
     }
 
-    if (!enabledTiers.includes(result.tier) || !MERGEABLE_TIERS.includes(result.tier)) {
+    if (!MERGEABLE_TIERS.includes(result.tier)) {
       refuse(`the pull request belongs to tier ${result.tier}, which does not merge automatically`);
     }
 
@@ -548,7 +548,6 @@ function main() {
       repository: { type: 'string', default: '.' },
       pulls: { type: 'string' },
       config: { type: 'string', default: fileURLToPath(new URL('./config.json', import.meta.url)) },
-      tiers: { type: 'string', default: '' },
       'main-ref': { type: 'string', default: 'refs/remotes/origin/main' },
       output: { type: 'string' },
     },
@@ -556,12 +555,11 @@ function main() {
 
   const config = JSON.parse(fs.readFileSync(options.config));
   const pullRequests = JSON.parse(fs.readFileSync(options.pulls));
-  const enabledTiers = options.tiers.split(',').map(tier => tier.trim()).filter(tier => TIERS.includes(tier));
   const git = createGit(options.repository);
-  const decisions = pullRequests.map(pullRequest => evaluate({ pullRequest, git, config, enabledTiers, mainRef: options['main-ref'] }));
+  const decisions = pullRequests.map(pullRequest => evaluate({ pullRequest, git, config, mainRef: options['main-ref'] }));
 
   if (options.output) {
-    fs.writeFileSync(options.output, JSON.stringify({ main: git.resolve(options['main-ref']), enabledTiers, decisions }, null, 2));
+    fs.writeFileSync(options.output, JSON.stringify({ main: git.resolve(options['main-ref']), decisions }, null, 2));
   }
 
   for (const decision of decisions) {

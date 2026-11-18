@@ -8,7 +8,7 @@ import { createGitHub, STATUS_CONTEXT, VALIDATION_FAILURE, validationConclusions
 const DESCRIPTION_LIMIT = 140;
 
 const { values: options } = parseArgs({ options: { decisions: { type: 'string' } } });
-const { decisions, enabledTiers } = JSON.parse(fs.readFileSync(options.decisions));
+const { decisions } = JSON.parse(fs.readFileSync(options.decisions));
 const github = createGitHub({ token: process.env.GITHUB_TOKEN, repository: process.env.GITHUB_REPOSITORY });
 const conclusions = await validationConclusions(github, process.env.GITHUB_RUN_ID);
 const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
@@ -38,8 +38,8 @@ for (const decision of decisions) {
 
   rows.push(`| #${decision.number} | ${decision.tier ?? ''} | ${passed ? 'pass' : 'fail'} | ${outcome} |`);
 
-  // A status is only posted where the tests are meant to decide: pull requests outside the enabled tiers are left exactly as they are today
-  if (!enabledTiers.includes(decision.tier) || !MERGEABLE_TIERS.includes(decision.tier) || !decision.headSha || decision.validation === 'failed-before') {
+  // A status is only posted where the tests are meant to decide: pull requests left to a maintainer stay exactly as they are today
+  if (!MERGEABLE_TIERS.includes(decision.tier) || !decision.headSha || decision.validation === 'failed-before') {
     continue;
   }
 
@@ -53,8 +53,6 @@ for (const decision of decisions) {
 
 if (process.env.GITHUB_STEP_SUMMARY) {
   fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, [
-    `Enabled tiers: ${enabledTiers.join(', ') || 'none'}`,
-    '',
     '| Pull request | Tier | Tests | Outcome |',
     '|---|---|---|---|',
     ...rows,

@@ -73,7 +73,7 @@ describe('gate', () => {
     };
   }
 
-  const decide = (pullRequest, enabledTiers = [ 'P1', 'P2' ]) => evaluate({ pullRequest, git, config: CONFIG, enabledTiers, mainRef: 'refs/heads/main', now: NOW });
+  const decide = pullRequest => evaluate({ pullRequest, git, config: CONFIG, mainRef: 'refs/heads/main', now: NOW });
 
   function assertRefused(decision, reasonPattern) {
     assert.equal(decision.eligible, false);
@@ -134,26 +134,16 @@ describe('gate', () => {
   });
 
   describe('tiers', () => {
-    const pathChange = () => openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://service.example/legal/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
-
-    it('refuses a tier that is not enabled', () => {
-      assertRefused(decide(pathChange(), ['P1']), /tier P2/);
-    });
-
-    it('refuses everything when no tier is enabled', () => {
-      assertRefused(decide(pathChange(), []), /tier P2/);
-    });
-
-    it('never merges tier P3, even when asked to', () => {
+    it('never merges a change of host', () => {
       const pullRequest = openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://elsewhere.example/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
 
-      assertRefused(decide(pullRequest, [ 'P1', 'P2', 'P3', 'P4' ]), /tier P3/);
+      assertRefused(decide(pullRequest), /tier P3/);
     });
 
-    it('never merges a new service, even when asked to', () => {
+    it('never merges a new service', () => {
       const pullRequest = openPullRequest({ 'declarations/New.json': json({ name: 'New', terms: {} }) });
 
-      assertRefused(decide(pullRequest, [ 'P1', 'P2', 'P3', 'P4' ]), /tier P4/);
+      assertRefused(decide(pullRequest), /tier P4/);
     });
 
     for (const [ title, declaration ] of Object.entries({

@@ -43,9 +43,7 @@ jobs:
       - name: Fetch the pull requests without checking them out
         run: jq -r '.[].number | tonumber | "+refs/pull/\(.)/head:refs/pr/\(.)"' pulls.json | xargs -r git fetch --quiet origin
       - name: Apply the rules
-        env:
-          TIERS: ${{ vars.AUTO_MERGE_TIERS }}
-        run: node .github/auto-merge/gate.js --pulls pulls.json --tiers "$TIERS" --output decisions.json
+        run: node .github/auto-merge/gate.js --pulls pulls.json --output decisions.json
       - name: Select the pull requests to validate
         id: select
         env:
@@ -115,7 +113,7 @@ jobs:
 
   merge:
     needs: [ evaluate, validate ]
-    if: always() && needs.evaluate.result == 'success' && vars.AUTO_MERGE_TIERS != '' && vars.AUTO_MERGE_APP_CLIENT_ID != ''
+    if: always() && needs.evaluate.result == 'success' && vars.AUTO_MERGE_APP_CLIENT_ID != ''
     runs-on: ubuntu-22.04
     # The key that can merge only exists in this environment, which only main can use
     environment: auto-merge

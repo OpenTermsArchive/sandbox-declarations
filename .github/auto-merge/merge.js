@@ -19,7 +19,7 @@ const { values: options } = parseArgs({
 });
 
 const config = JSON.parse(fs.readFileSync(options.config));
-const { decisions, enabledTiers } = JSON.parse(fs.readFileSync(options.decisions));
+const { decisions } = JSON.parse(fs.readFileSync(options.decisions));
 const limit = Number.parseInt(options.limit, 10) || 0;
 const reader = createGitHub({ token: process.env.GITHUB_TOKEN, repository: process.env.GITHUB_REPOSITORY });
 const merger = createGitHub({ token: process.env.MERGE_TOKEN, repository: process.env.GITHUB_REPOSITORY });
@@ -59,7 +59,7 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
 
   execFileSync('git', [ 'fetch', '--quiet', 'origin', '+refs/heads/main:refs/remotes/origin/main', `+refs/pull/${decision.number}/head:refs/pr/${decision.number}` ]);
 
-  const current = evaluate({ pullRequest, git, config, enabledTiers });
+  const current = evaluate({ pullRequest, git, config });
 
   if (pullRequest.state !== 'open' || !current.eligible || current.headSha !== decision.headSha || JSON.stringify(current.files) !== JSON.stringify(decision.files)) {
     console.log(`#${decision.number}: no longer what was tested (${current.reason})`);
