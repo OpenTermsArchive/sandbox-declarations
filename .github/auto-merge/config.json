@@ -1,0 +1,11 @@
+{
+  "authors": [364319],
+  "sharedHosts": [],
+  "versionsRepository": "OpenTermsArchive/contrib-versions",
+  "comparison": {
+    "minSimilarity": 0.7,
+    "minSizeRatio": 0.6,
+    "maxSizeRatio": 1.6
+  },
+  "limits": {}
+}

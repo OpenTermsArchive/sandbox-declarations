@@ -1,0 +1,157 @@
+name: Auto-merge
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+    inputs:
+      retry:
+        description: Validate again the pull requests whose validation already failed
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: auto-merge
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    # A run started from another branch would use the rules of that branch
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: read
+    outputs:
+      selected: ${{ steps.select.outputs.selected }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0 # the merge base of each pull request is needed
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+      - name: List open pull requests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --paginate "repos/$GITHUB_REPOSITORY/pulls?state=open&per_page=100" | jq -s 'add // []' > pulls.json
+      - name: Fetch the pull requests without checking them out
+        run: jq -r '.[].number | tonumber | "+refs/pull/\(.)/head:refs/pr/\(.)"' pulls.json | xargs -r git fetch --quiet origin
+      - name: Apply the rules
+        env:
+          TIERS: ${{ vars.AUTO_MERGE_TIERS }}
+        run: node .github/auto-merge/gate.mjs --pulls pulls.json --tiers "$TIERS" --output decisions.json
+      - name: Select the pull requests to validate
+        id: select
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          LIMIT: ${{ vars.AUTO_MERGE_VALIDATION_LIMIT || '10' }}
+          RETRY: ${{ inputs.retry && '--retry' || '' }}
+        run: echo "selected=$(node .github/auto-merge/select.mjs --decisions decisions.json --limit "$LIMIT" $RETRY)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: decisions
+          path: decisions.json
+
+  validate:
+    name: validate (#${{ matrix.pull.number }})
+    needs: evaluate
+    if: needs.evaluate.outputs.selected != '[]'
+    # Ubuntu 22.04 because AppArmor restrictions in newer versions interfere with the sandbox of Puppeteer
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        pull: ${{ fromJSON(needs.evaluate.outputs.selected) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+      - run: npm ci
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: decisions
+      - name: Validate with the engine and the rules of main
+        env:
+          PULL: ${{ matrix.pull.number }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/auto-merge/validate.mjs --decisions decisions.json --pull "$PULL"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: validation-${{ matrix.pull.number }}
+          path: |
+            validation.json
+            data/versions/**/*.md
+          if-no-files-found: ignore
+
+  report:
+    needs: [ evaluate, validate ]
+    if: always() && needs.evaluate.result == 'success'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      actions: read
+      statuses: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: decisions
+      - name: Set the status of each pull request
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/auto-merge/report.mjs --decisions decisions.json
+
+  merge:
+    needs: [ evaluate, validate ]
+    if: always() && needs.evaluate.result == 'success' && vars.AUTO_MERGE_TIERS != '' && vars.AUTO_MERGE_APP_CLIENT_ID != ''
+    runs-on: ubuntu-22.04
+    # The key that can merge only exists in this environment, which only main can use
+    environment: auto-merge
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: decisions
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        id: app
+        with:
+          client-id: ${{ vars.AUTO_MERGE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.AUTO_MERGE_APP_PRIVATE_KEY }}
+      - name: Merge the pull requests whose tests pass
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MERGE_TOKEN: ${{ steps.app.outputs.token }}
+          LIMIT: ${{ vars.AUTO_MERGE_LIMIT || '2' }}
+        run: node .github/auto-merge/merge.mjs --decisions decisions.json --limit "$LIMIT"
