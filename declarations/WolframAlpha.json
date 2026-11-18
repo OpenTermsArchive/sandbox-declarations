@@ -4,7 +4,13 @@
   "terms": {
     "Terms of Service": {
       "fetch": "https://www.wolframalpha.com/termsofuse/",
-      "select": ".terms"
+      "select": [
+        "main"
+      ],
+      "remove": [
+        "a[href$=\"/termsofuse/pro\"]",
+        "p:nth-of-type(4)"
+      ]
     },
     "Privacy Policy": {
       "fetch": "https://www.wolfram.com/legal/privacy/wolfram/",
