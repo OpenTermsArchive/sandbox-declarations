@@ -27,6 +27,7 @@ jobs:
       statuses: read
     outputs:
       selected: ${{ steps.select.outputs.selected }}
+      main: ${{ steps.gate.outputs.main }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -43,7 +44,11 @@ jobs:
       - name: Fetch the pull requests without checking them out
         run: jq -r '.[].number | tonumber | "+refs/pull/\(.)/head:refs/pr/\(.)"' pulls.json | xargs -r git fetch --quiet origin
       - name: Apply the rules
-        run: node .github/auto-merge/gate.js --pulls pulls.json --output decisions.json
+        id: gate
+        run: |
+          node .github/auto-merge/gate.js --pulls pulls.json --output decisions.json
+          main=$(jq -r .main decisions.json)
+          echo "main=$main" >> "$GITHUB_OUTPUT"
       - name: Select the pull requests to validate
         id: select
         env:
@@ -73,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ needs.evaluate.outputs.main }} # the main that was evaluated, which the merge job compares with
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

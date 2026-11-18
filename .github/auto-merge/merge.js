@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { createGit, evaluate } from './gate.js';
+import { createGit, evaluate, invalidatesValidation } from './gate.js';
 import { createGitHub, validationConclusions, validationJobName } from './github.js';
 
 const MERGED_LABEL = 'auto-merged';
@@ -19,7 +19,7 @@ const { values: options } = parseArgs({
 });
 
 const config = JSON.parse(fs.readFileSync(options.config));
-const { decisions } = JSON.parse(fs.readFileSync(options.decisions));
+const { main: validatedMain, decisions } = JSON.parse(fs.readFileSync(options.decisions));
 const limit = Number.parseInt(options.limit, 10) || 0;
 const reader = createGitHub({ token: process.env.GITHUB_TOKEN, repository: process.env.GITHUB_REPOSITORY });
 const merger = createGitHub({ token: process.env.MERGE_TOKEN, repository: process.env.GITHUB_REPOSITORY });
@@ -64,6 +64,13 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
 
     if (pullRequest.state !== 'open' || !current.eligible || current.headSha !== decision.headSha || JSON.stringify(current.files) !== JSON.stringify(decision.files)) {
       console.log(`#${decision.number}: no longer what was tested (${current.reason})`);
+      continue;
+    }
+
+    const changedPaths = git.changes(validatedMain, git.resolve('refs/remotes/origin/main')).map(change => change.path);
+
+    if (invalidatesValidation({ changedPaths, serviceIds: decision.services.map(service => service.id) })) {
+      console.log(`#${decision.number}: main changed since the validation, left for the next run`);
       continue;
     }
   } catch (error) {

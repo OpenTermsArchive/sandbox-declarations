@@ -474,6 +474,11 @@ function checkFiles({ changes, mainTree, limits }) {
   return { services };
 }
 
+// A pull request is validated on the main that was evaluated: a later change of main keeps that validation only if it touches the declarations of other services
+export function invalidatesValidation({ changedPaths, serviceIds }) {
+  return changedPaths.some(path => !path.startsWith('declarations/') || serviceIds.some(id => path.startsWith(`declarations/${id}.`)));
+}
+
 export function evaluate({ pullRequest, git, config, mainRef = 'refs/remotes/origin/main', now = new Date() }) {
   const limits = { ...DEFAULT_LIMITS, ...config.limits };
   const result = { number: pullRequest.number, headSha: pullRequest.head?.sha, tier: null, services: [], files: [] };

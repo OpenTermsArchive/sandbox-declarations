@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { checkLocation, classify, createGit, evaluate, parseStrictJSON, Refusal } from './gate.js';
+import { checkLocation, classify, createGit, evaluate, invalidatesValidation, parseStrictJSON, Refusal } from './gate.js';
 
 const NOW = new Date('2026-11-18T00:00:00Z');
 const CONFIG = { sharedHosts: ['shared.example'], limits: {} };
@@ -385,5 +385,14 @@ describe('gate', () => {
 
       assertRefused(decide(pullRequest), /sets a port/);
     });
+  });
+
+  describe('changes on main since the validation', () => {
+    const invalidates = changedPaths => invalidatesValidation({ changedPaths, serviceIds: ['Service'] });
+
+    it('keeps the validation when main changed nothing', () => assert.equal(invalidates([]), false));
+    it('keeps the validation when main changed other services', () => assert.equal(invalidates([ 'declarations/Other.json', 'declarations/Other.history.json', 'declarations/Other.filters.js' ]), false));
+    it('drops the validation when main changed the filters of the service', () => assert.equal(invalidates(['declarations/Service.filters.js']), true));
+    it('drops the validation when main changed the engine', () => assert.equal(invalidates(['package-lock.json']), true));
   });
 });
