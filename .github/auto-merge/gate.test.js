@@ -340,6 +340,17 @@ describe('gate', () => {
     it('refuses a host where anyone can publish', () => refuses('https://someone.shared.example/terms', /anyone can publish/));
     it('refuses a location that is not canonical', () => refuses('https://service.example/a/../terms', /canonical/));
 
+    describe('with the configuration of the collection', () => {
+      const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
+
+      // Hosts that declarations of this collection track, where anyone can publish a page
+      for (const location of [ 'https://gist.github.com/someone/1234', 'https://substack.com/home/post/p-1234' ]) {
+        it(`refuses ${location}`, () => {
+          assert.throws(() => checkLocation(location, config), error => error instanceof Refusal && /anyone can publish/.test(error.message));
+        });
+      }
+    });
+
     it('refuses such a location in a pull request', () => {
       const pullRequest = openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://service.example:8443/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
 
