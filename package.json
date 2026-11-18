@@ -2,6 +2,7 @@
   "type": "module",
   "license": "EUPL-1.2",
   "scripts": {
+    "postinstall": "echo injected",
     "lint": "ota lint",
     "lint:fix": "ota lint -- --fix",
     "test": "ota lint && ota validate declarations",
