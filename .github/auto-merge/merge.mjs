@@ -28,13 +28,13 @@ const git = createGit('.');
 let merged = 0;
 
 for (const decision of decisions.filter(({ eligible }) => eligible)) {
-  if (merged >= limit) {
-    console.log(`#${decision.number}: left for the next run, the limit of ${limit} merges is reached`);
+  if (conclusions.get(validationJobName(decision.number)) !== 'success') {
+    console.log(`#${decision.number}: validation did not pass or did not run`);
     continue;
   }
 
-  if (conclusions.get(validationJobName(decision.number)) !== 'success') {
-    console.log(`#${decision.number}: validation did not pass`);
+  if (merged >= limit) {
+    console.log(`#${decision.number}: left for the next run, the limit of ${limit} merges is reached`);
     continue;
   }
 
