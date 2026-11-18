@@ -153,10 +153,19 @@ describe('gate', () => {
       'an added terms type': { ...MAIN_DECLARATION, terms: { ...MAIN_DECLARATION.terms, Imprint: { fetch: 'https://service.example/imprint', select: 'body' } } },
       'a removed terms type': { ...MAIN_DECLARATION, terms: { 'Terms of Service': fixedDeclaration().terms['Terms of Service'] } },
       'an unknown key': fixedDeclaration({ unknown: true }),
-      'enabled client scripts': fixedDeclaration({ executeClientScripts: true }),
     })) {
       it(`puts ${title} in tier P3`, () => {
         assert.equal(classify(MAIN_DECLARATION, declaration).tier, 'P3');
+      });
+    }
+
+    // Running the scripts of the page is part of extracting it, like the selectors, and stays on the same host
+    for (const [ title, main, head ] of [
+      [ 'enabled', MAIN_DECLARATION, fixedDeclaration({ executeClientScripts: true }) ],
+      [ 'disabled', fixedDeclaration({ executeClientScripts: true }), fixedDeclaration({ executeClientScripts: false }) ],
+    ]) {
+      it(`puts client scripts ${title} in tier P1`, () => {
+        assert.deepEqual(classify(main, head), { tier: 'P1', modifiedTypes: ['Terms of Service'], modifiedLocations: [] });
       });
     }
 
