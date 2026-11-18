@@ -84,19 +84,10 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: decisions
-      - name: Validate with the engine and the rules of main
+      - name: Validate with the engine of main
         env:
           PULL: ${{ matrix.pull.number }}
-          GITHUB_TOKEN: ${{ github.token }}
         run: node .github/auto-merge/validate.mjs --decisions decisions.json --pull "$PULL"
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always()
-        with:
-          name: validation-${{ matrix.pull.number }}
-          path: |
-            validation.json
-            data/versions/**/*.md
-          if-no-files-found: ignore
 
   report:
     needs: [ evaluate, validate ]
