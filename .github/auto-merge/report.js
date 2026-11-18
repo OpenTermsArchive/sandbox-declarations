@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 
+import { commentFor, setComment } from './comment.js';
 import { MERGEABLE_TIERS } from './gate.js';
 import { createGitHub, setStatus, VALIDATION_FAILURE, validationConclusions, validationJobName } from './github.js';
 
@@ -38,7 +39,14 @@ for (const decision of decisions) {
 
   rows.push(`| #${decision.number} | ${decision.tier ?? ''} | ${passed ? 'pass' : 'fail'} | ${outcome} |`);
 
-  // A status is only posted where the tests are meant to decide: pull requests left to a maintainer stay exactly as they are today
+  try {
+    await setComment(github, decision.number, ({ hasComment }) => commentFor(decision, { validation, runUrl, hasComment }));
+  } catch (error) {
+    console.error(`#${decision.number}: comment not set (${error.message})`);
+    process.exitCode = 1;
+  }
+
+  // A status is only posted where the tests are meant to decide: pull requests left to a maintainer only get the comment
   if (!MERGEABLE_TIERS.includes(decision.tier) || !decision.headSha || decision.validation === 'failed-before') {
     continue;
   }
