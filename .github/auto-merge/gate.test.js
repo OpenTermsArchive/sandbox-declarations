@@ -9,7 +9,7 @@ import { checkLocation, classify, createGit, evaluate, invalidatesValidation, pa
 
 const NOW = new Date('2026-11-18T00:00:00Z');
 const CONFIG = { sharedHosts: ['shared.example'], limits: {} };
-const COMMIT_DATE = '2026-01-01T00:00:00Z'; // fixed, since the last change of a declaration bounds the dates of its history
+const COMMIT_DATE = '2026-01-01T00:00:00Z'; // fixed, so that history dates can be set before or after the commits of the test repository
 
 const MAIN_DECLARATION = {
   name: 'Service',
@@ -313,8 +313,11 @@ describe('gate', () => {
       });
     }
 
-    it('refuses an entry valid until before the declaration it replaces was committed', () => {
-      assertRefused(withHistory(fixedHistory('2025-06-01T00:00:00Z')), /before the declaration it replaces/);
+    // A commit that only reformats or reseeds a declaration, or changes other terms of it, does not tell when these terms came into force
+    it('accepts an entry valid until before the last commit of its declaration', () => {
+      const decision = withHistory(fixedHistory('2025-06-01T00:00:00Z'));
+
+      assert.equal(decision.eligible, true, decision.reason);
     });
 
     it('refuses an entry older than the existing ones', () => {
