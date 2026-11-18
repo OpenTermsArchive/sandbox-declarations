@@ -74,7 +74,7 @@ describe('gate', () => {
     };
   }
 
-  const decide = pullRequest => evaluate({ pullRequest, git, config: CONFIG, mainRef: 'refs/heads/main', now: NOW });
+  const decide = (pullRequest, config = CONFIG) => evaluate({ pullRequest, git, config, mainRef: 'refs/heads/main', now: NOW });
 
   function assertRefused(decision, reasonPattern) {
     assert.equal(decision.eligible, false);
@@ -372,6 +372,12 @@ describe('gate', () => {
           assert.throws(() => checkLocation(location, config), error => error instanceof Refusal && /anyone can publish/.test(error.message));
         });
       }
+    });
+
+    it('refuses a location moved on a host where anyone can publish in a pull request', () => {
+      const pullRequest = openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://service.example/someone/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
+
+      assertRefused(decide(pullRequest, { ...CONFIG, sharedHosts: ['service.example'] }), /anyone can publish/);
     });
 
     it('refuses such a location in a pull request', () => {
