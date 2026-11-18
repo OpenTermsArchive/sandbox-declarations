@@ -36,7 +36,15 @@ for (const file of decision.files) {
   fs.writeFileSync(file.path, git('cat-file', 'blob', file.sha));
 }
 
-const failures = decision.services.filter(service => spawnSync(OTA, [ 'validate', 'declarations', '--services', service.id, '--types', ...service.types ], { stdio: 'inherit' }).status !== 0);
+const passes = args => spawnSync(OTA, args, { stdio: 'inherit' }).status === 0;
+
+// The lint is run as well: validate does not check the formatting, and a badly formatted file merged here fails the lint of every later pull request. Both run so that the log shows every error
+const failures = decision.services.filter(service => {
+  const linted = passes([ 'lint', '--services', service.id ]);
+  const validated = passes([ 'validate', 'declarations', '--services', service.id, '--types', ...service.types ]);
+
+  return !linted || !validated;
+});
 
 console.log(failures.length ? `Failed: ${failures.map(service => service.id).join(', ')}` : 'Passed');
 process.exit(failures.length ? 1 : 0);
