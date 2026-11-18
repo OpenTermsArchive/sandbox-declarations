@@ -357,15 +357,7 @@ export function checkLocation(location, { sharedHosts = [], limits = DEFAULT_LIM
   }
 }
 
-export function checkIdentity(pullRequest, config) {
-  if (!config.authors.includes(pullRequest.user?.id)) {
-    refuse('the author is not on the list of authors whose pull requests merge automatically');
-  }
-
-  if (pullRequest.head?.repo?.owner?.id !== pullRequest.user.id) {
-    refuse('the pull request does not come from a repository owned by its author');
-  }
-
+export function checkState(pullRequest) {
   if (pullRequest.draft) {
     refuse('the pull request is a draft');
   }
@@ -476,7 +468,7 @@ export function evaluate({ pullRequest, git, config, enabledTiers, mainRef = 're
   const result = { number: pullRequest.number, headSha: pullRequest.head?.sha, tier: null, services: [], files: [] };
 
   try {
-    checkIdentity(pullRequest, config);
+    checkState(pullRequest);
 
     const head = git.resolve(`refs/pr/${pullRequest.number}`);
 

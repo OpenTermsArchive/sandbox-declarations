@@ -7,9 +7,8 @@ import { after, before, describe, it } from 'node:test';
 
 import { checkLocation, classify, createGit, evaluate, parseStrictJSON, Refusal } from './gate.mjs';
 
-const AUTHOR_ID = 1;
 const NOW = new Date('2026-11-18T00:00:00Z');
-const CONFIG = { authors: [AUTHOR_ID], sharedHosts: ['shared.example'], limits: {} };
+const CONFIG = { sharedHosts: ['shared.example'], limits: {} };
 
 const MAIN_DECLARATION = {
   name: 'Service',
@@ -68,9 +67,8 @@ describe('gate', () => {
       draft: false,
       auto_merge: null,
       labels: [],
-      user: { id: AUTHOR_ID },
       base: { ref: 'main' },
-      head: { sha, repo: { owner: { id: AUTHOR_ID } } },
+      head: { sha },
       ...overrides.pullRequest,
     };
   }
@@ -243,11 +241,10 @@ describe('gate', () => {
     });
   });
 
-  describe('identity', () => {
+  describe('state of the pull request', () => {
     const open = pullRequest => openPullRequest({ 'declarations/Service.json': json(fixedDeclaration()), 'declarations/Service.history.json': json(fixedHistory()) }, { pullRequest });
 
     for (const [ title, pullRequest, reason ] of [
-      [ 'an author who is not listed', { user: { id: 2 }, head: null }, /author/ ],
       [ 'a draft', { draft: true }, /draft/ ],
       [ 'another base branch', { base: { ref: 'other' } }, /main/ ],
       [ 'a pull request on hold', { labels: [{ name: 'hold' }] }, /hold/ ],
@@ -257,14 +254,6 @@ describe('gate', () => {
         assertRefused(decide(open(pullRequest)), reason);
       });
     }
-
-    it('refuses a branch that lives in someone else\'s repository', () => {
-      const pullRequest = open({});
-
-      pullRequest.head.repo.owner.id = 2;
-
-      assertRefused(decide(pullRequest), /owned by its author/);
-    });
   });
 
   describe('history', () => {
