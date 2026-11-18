@@ -3,8 +3,13 @@
   "importedFrom": "https://github.com/tosdr/tosback2/blob/f762cd4bbb2571272985fed009201a23300ba9b2/rules/wolframalpha.com.xml",
   "terms": {
     "Terms of Service": {
-      "fetch": "https://www.wolframalpha.com/termsofuse/",
-      "select": ".terms"
+      "fetch": "https://web.archive.org/web/2020/https://www.wolframalpha.com/terms",
+      "select": [
+        "main"
+      ],
+      "remove": [
+        "a[href$=\"/termsofuse/pro\"]"
+      ]
     },
     "Privacy Policy": {
       "fetch": "https://www.wolfram.com/legal/privacy/wolfram/",
