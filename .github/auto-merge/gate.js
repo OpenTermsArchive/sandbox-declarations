@@ -12,7 +12,8 @@ export const MERGEABLE_TIERS = [ 'P1', 'P2' ];
 const DECLARATION_PATH = /^declarations\/([^/]+)\.json$/;
 const HISTORY_SUFFIX = '.history';
 const REGULAR_FILE_MODE = '100644';
-const SELECTOR_KEYS = [ 'select', 'remove', 'executeClientScripts' ];
+// executeClientScripts is not a selector: it changes how the document is fetched, so changing it leaves the tiers that merge automatically
+const SELECTOR_KEYS = [ 'select', 'remove' ];
 const VALID_UNTIL_FORMAT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
 const IPV4_FORMAT = /^\d+(\.\d+){3}$/;
 

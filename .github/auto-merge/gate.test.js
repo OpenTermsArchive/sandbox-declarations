@@ -152,6 +152,7 @@ describe('gate', () => {
       'an added terms type': { ...MAIN_DECLARATION, terms: { ...MAIN_DECLARATION.terms, Imprint: { fetch: 'https://service.example/imprint', select: 'body' } } },
       'a removed terms type': { ...MAIN_DECLARATION, terms: { 'Terms of Service': fixedDeclaration().terms['Terms of Service'] } },
       'an unknown key': fixedDeclaration({ unknown: true }),
+      'enabled client scripts': fixedDeclaration({ executeClientScripts: true }),
     })) {
       it(`puts ${title} in tier P3`, () => {
         assert.equal(classify(MAIN_DECLARATION, declaration).tier, 'P3');
