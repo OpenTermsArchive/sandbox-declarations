@@ -4,11 +4,6 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-export const TIERS = [ 'P1', 'P2', 'P3', 'P4' ];
-
-// P3 and P4 are only recognised: no rule vouches for them, so they are left to a maintainer
-export const MERGEABLE_TIERS = [ 'P1', 'P2' ];
-
 const DECLARATION_PATH = /^declarations\/([^/]+)\.json$/;
 const HISTORY_SUFFIX = '.history';
 const REGULAR_FILE_MODE = '100644';
@@ -213,17 +208,14 @@ export function classify(mainDeclaration, headDeclaration) {
 
   const { terms: mainTerms, ...mainRest } = mainDeclaration;
   const { terms: headTerms, ...headRest } = headDeclaration;
-  const outOfTier = { tier: 'P3', modifiedTypes: [], modifiedLocations: [] };
-
   if (canonical(mainRest) !== canonical(headRest)) {
-    return outOfTier;
+    return { mergeable: false, reason: 'the pull request changes more than the terms of a service, such as its name' };
   }
 
   if (canonical(Object.keys(mainTerms).sort()) !== canonical(Object.keys(headTerms).sort())) {
-    return outOfTier;
+    return { mergeable: false, reason: 'the pull request adds or removes terms types' };
   }
 
-  let tier = 'P1';
   const modifiedTypes = [];
   const modifiedLocations = [];
 
@@ -239,16 +231,15 @@ export function classify(mainDeclaration, headDeclaration) {
     }
 
     if (canonical(withoutSelectors(mainTerms[type], hostnameOf)) !== canonical(withoutSelectors(headTerms[type], hostnameOf))) {
-      return outOfTier;
+      return { mergeable: false, reason: 'the pull request changes more than the selectors of a document or its address on the same website' };
     }
 
-    tier = 'P2';
     const mainLocations = fetchLocations(mainTerms[type]);
 
     modifiedLocations.push(...fetchLocations(headTerms[type]).filter(location => !mainLocations.includes(location)));
   }
 
-  return { tier, modifiedTypes, modifiedLocations };
+  return { mergeable: true, modifiedTypes, modifiedLocations };
 }
 
 export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now }) {
@@ -446,7 +437,7 @@ function checkFiles({ changes, mainTree, limits }) {
     const declarationOnMain = mainTree.get(`declarations/${serviceId}.json`);
 
     if (!declarationOnMain || declarationOnMain.mode !== REGULAR_FILE_MODE) {
-      return { tier: 'P4' };
+      refuse('the pull request adds a new service');
     }
 
     const fileOnMain = mainTree.get(change.path);
@@ -475,7 +466,8 @@ export function invalidatesValidation({ changedPaths, serviceIds }) {
 
 export function evaluate({ pullRequest, git, config, mainRef = 'refs/remotes/origin/main', now = new Date() }) {
   const limits = { ...DEFAULT_LIMITS, ...config.limits };
-  const result = { number: pullRequest.number, headSha: pullRequest.head?.sha, tier: null, services: [], files: [] };
+  // Only pull requests within what merges on its own get a status: the others are left to a maintainer, as before this workflow
+  const result = { number: pullRequest.number, headSha: pullRequest.head?.sha, withinScope: false, services: [], files: [] };
 
   try {
     checkState(pullRequest);
@@ -488,61 +480,52 @@ export function evaluate({ pullRequest, git, config, mainRef = 'refs/remotes/ori
 
     const main = git.resolve(mainRef);
     const mainTree = git.declarationsTree(main);
-    const { services, tier: fileTier } = checkFiles({ changes: git.changes(git.mergeBase(main, head), head), mainTree, limits });
+    const { services } = checkFiles({ changes: git.changes(git.mergeBase(main, head), head), mainTree, limits });
 
-    result.tier = fileTier ?? 'P1';
+    result.withinScope = true;
 
-    if (!fileTier) {
-      for (const [ serviceId, { declaration, history }] of services) {
-        if (!declaration) {
-          refuse('a history file changes while its declaration does not');
-        }
-
-        if (!history) {
-          refuse('a declaration changes while its history file does not');
-        }
-
-        for (const change of [ declaration, history ]) {
-          if (git.blobSize(change.newSha) > limits.fileBytes) {
-            refuse('a file is too large');
-          }
-        }
-
-        const mainDeclaration = JSON.parse(git.blob(declaration.oldSha));
-        const headDeclaration = parseStrictJSON(git.blob(declaration.newSha), limits);
-        const mainHistory = history.status === 'A' ? {} : JSON.parse(git.blob(history.oldSha));
-        const headHistory = parseStrictJSON(git.blob(history.newSha), limits);
-        const { tier, modifiedTypes, modifiedLocations } = classify(mainDeclaration, headDeclaration);
-
-        if (TIERS.indexOf(tier) > TIERS.indexOf(result.tier)) {
-          result.tier = tier;
-        }
-
-        if (tier === 'P3') {
-          continue;
-        }
-
-        if (!modifiedTypes.length) {
-          refuse('a declaration file changes without changing any terms');
-        }
-
-        if (Object.values(headDeclaration.terms).some(terms => Array.isArray(terms.combine) && terms.combine.length > limits.combine)) {
-          refuse('a declaration combines too many documents');
-        }
-
-        modifiedLocations.forEach(location => checkLocation(location, { sharedHosts: config.sharedHosts, limits }));
-        checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now });
-
-        result.services.push({ id: serviceId, types: modifiedTypes });
-        result.files.push({ path: declaration.path, sha: declaration.newSha }, { path: history.path, sha: history.newSha });
+    for (const [ serviceId, { declaration, history }] of services) {
+      if (!declaration) {
+        refuse('a history file changes while its declaration does not');
       }
+
+      if (!history) {
+        refuse('a declaration changes while its history file does not');
+      }
+
+      for (const change of [ declaration, history ]) {
+        if (git.blobSize(change.newSha) > limits.fileBytes) {
+          refuse('a file is too large');
+        }
+      }
+
+      const mainDeclaration = JSON.parse(git.blob(declaration.oldSha));
+      const headDeclaration = parseStrictJSON(git.blob(declaration.newSha), limits);
+      const mainHistory = history.status === 'A' ? {} : JSON.parse(git.blob(history.oldSha));
+      const headHistory = parseStrictJSON(git.blob(history.newSha), limits);
+      const { mergeable, reason, modifiedTypes, modifiedLocations } = classify(mainDeclaration, headDeclaration);
+
+      if (!mergeable) {
+        result.withinScope = false;
+        refuse(reason);
+      }
+
+      if (!modifiedTypes.length) {
+        refuse('a declaration file changes without changing any terms');
+      }
+
+      if (Object.values(headDeclaration.terms).some(terms => Array.isArray(terms.combine) && terms.combine.length > limits.combine)) {
+        refuse('a declaration combines too many documents');
+      }
+
+      modifiedLocations.forEach(location => checkLocation(location, { sharedHosts: config.sharedHosts, limits }));
+      checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now });
+
+      result.services.push({ id: serviceId, types: modifiedTypes });
+      result.files.push({ path: declaration.path, sha: declaration.newSha }, { path: history.path, sha: history.newSha });
     }
 
-    if (!MERGEABLE_TIERS.includes(result.tier)) {
-      refuse(`the pull request belongs to tier ${result.tier}, which does not merge automatically`);
-    }
-
-    return { ...result, eligible: true, reason: `eligible in tier ${result.tier}` };
+    return { ...result, eligible: true, reason: 'eligible' };
   } catch (error) {
     if (!(error instanceof Refusal)) {
       console.error(`#${pullRequest.number}:`, error);
@@ -573,7 +556,7 @@ function main() {
   }
 
   for (const decision of decisions) {
-    console.log(`#${decision.number}\t${decision.eligible ? 'ELIGIBLE' : 'REFUSED'}\t${decision.tier ?? '-'}\t${decision.reason}`);
+    console.log(`#${decision.number}\t${decision.eligible ? 'ELIGIBLE' : 'REFUSED'}\t${decision.reason}`);
   }
 }
 

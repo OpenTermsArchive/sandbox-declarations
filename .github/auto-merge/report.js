@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 
 import { commentFor, setComment } from './comment.js';
-import { MERGEABLE_TIERS } from './gate.js';
 import { createGitHub, setStatus, VALIDATION_FAILURE, validationConclusions, validationJobName } from './github.js';
 
 const DESCRIPTION_LIMIT = 140;
@@ -37,7 +36,7 @@ for (const decision of decisions) {
   const waiting = decision.eligible && decision.validation === 'deferred';
   const outcome = outcomeOf(decision, validation);
 
-  rows.push(`| #${decision.number} | ${decision.tier ?? ''} | ${passed ? 'pass' : 'fail'} | ${outcome} |`);
+  rows.push(`| #${decision.number} | ${passed ? 'pass' : 'fail'} | ${outcome} |`);
 
   try {
     await setComment(github, decision.number, ({ hasComment }) => commentFor(decision, { validation, hasComment }));
@@ -47,7 +46,7 @@ for (const decision of decisions) {
   }
 
   // A status is only posted where the tests are meant to decide: pull requests left to a maintainer only get the comment
-  if (!MERGEABLE_TIERS.includes(decision.tier) || !decision.headSha || decision.validation === 'failed-before') {
+  if (!decision.withinScope || !decision.headSha || decision.validation === 'failed-before') {
     continue;
   }
 
@@ -65,8 +64,8 @@ for (const decision of decisions) {
 
 if (process.env.GITHUB_STEP_SUMMARY) {
   fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, [
-    '| Pull request | Tier | Tests | Outcome |',
-    '|---|---|---|---|',
+    '| Pull request | Tests | Outcome |',
+    '|---|---|---|',
     ...rows,
     '',
   ].join('\n'));

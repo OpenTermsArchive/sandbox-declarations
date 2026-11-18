@@ -4,7 +4,7 @@ import { describe, it, mock } from 'node:test';
 import { COMMENT_AUTHOR, COMMENT_MARKER, commentFor, setComment } from './comment.js';
 
 const refused = reason => ({ number: 1, eligible: false, reason });
-const eligible = validation => ({ number: 1, eligible: true, tier: 'P1', validation });
+const eligible = validation => ({ number: 1, eligible: true, withinScope: true, validation });
 const commentOn = (decision, { validation = null, hasComment = false } = {}) => commentFor(decision, { validation, hasComment });
 
 describe('comment', () => {
@@ -25,11 +25,16 @@ describe('comment', () => {
       assert.doesNotMatch(text, /evaluated again/);
     });
 
-    it('explains tiers without naming them', () => {
-      assert.match(commentOn(refused('the pull request belongs to tier P3, which does not merge automatically')), /changes more than the selectors/);
-      assert.match(commentOn(refused('the pull request belongs to tier P4, which does not merge automatically')), /adds a new service/);
-      assert.doesNotMatch(commentOn(refused('the pull request belongs to tier P4, which does not merge automatically')), /P4/);
-    });
+    for (const reason of [
+      'the pull request adds a new service',
+      'the pull request adds or removes terms types',
+      'the pull request changes more than the terms of a service, such as its name',
+      'the pull request changes more than the selectors of a document or its address on the same website',
+    ]) {
+      it(`leaves to a maintainer a pull request that ${reason.replace('the pull request ', '')}`, () => {
+        assert.match(commentOn(refused(reason)), /A maintainer has to review it\./);
+      });
+    }
 
     it('sends to a maintainer a new address on a host where anyone can publish', () => {
       assert.match(commentOn(refused('a fetch location changes on a host where anyone can publish')), /A maintainer has to review it\./);
