@@ -55,14 +55,20 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
   }
 
   // Earlier merges of this run moved main, and the pull request may have changed since it was evaluated: nothing decided before this point is taken for granted
-  const pullRequest = await reader.get(`/repos/{repository}/pulls/${decision.number}`);
+  try {
+    const pullRequest = await reader.get(`/repos/{repository}/pulls/${decision.number}`);
 
-  execFileSync('git', [ 'fetch', '--quiet', 'origin', '+refs/heads/main:refs/remotes/origin/main', `+refs/pull/${decision.number}/head:refs/pr/${decision.number}` ]);
+    execFileSync('git', [ 'fetch', '--quiet', 'origin', '+refs/heads/main:refs/remotes/origin/main', `+refs/pull/${decision.number}/head:refs/pr/${decision.number}` ]);
 
-  const current = evaluate({ pullRequest, git, config });
+    const current = evaluate({ pullRequest, git, config });
 
-  if (pullRequest.state !== 'open' || !current.eligible || current.headSha !== decision.headSha || JSON.stringify(current.files) !== JSON.stringify(decision.files)) {
-    console.log(`#${decision.number}: no longer what was tested (${current.reason})`);
+    if (pullRequest.state !== 'open' || !current.eligible || current.headSha !== decision.headSha || JSON.stringify(current.files) !== JSON.stringify(decision.files)) {
+      console.log(`#${decision.number}: no longer what was tested (${current.reason})`);
+      continue;
+    }
+  } catch (error) {
+    console.log(`#${decision.number}: could not be checked again (${error.message})`);
+    process.exitCode = 1;
     continue;
   }
 
