@@ -198,7 +198,7 @@ describe('gate', () => {
     }
 
     it('refuses a declaration replaced by a directory', () => {
-      assertRefused(decide(openPullRequest({ 'declarations/Service.json': null, 'declarations/Service.json/payload.json': '{}\n' })), /deletes a file|something else than JSON files/);
+      assertRefused(decide(openPullRequest({ 'declarations/Service.json': null, 'declarations/Service.json/payload.json': '{}\n' })), /deletes a file/);
     });
 
     it('refuses more files than a declaration fix needs', () => {
@@ -383,7 +383,7 @@ describe('gate', () => {
     it('refuses such a location in a pull request', () => {
       const pullRequest = openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://service.example:8443/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
 
-      assertRefused(decide(pullRequest), /tier P3|port/);
+      assertRefused(decide(pullRequest), /sets a port/);
     });
   });
 });
