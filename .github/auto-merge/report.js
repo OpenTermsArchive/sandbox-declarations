@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { parseArgs } from 'node:util';
 
 import { MERGEABLE_TIERS } from './gate.js';
-import { createGitHub, STATUS_CONTEXT, VALIDATION_FAILURE, validationConclusions, validationJobName } from './github.js';
+import { createGitHub, setStatus, VALIDATION_FAILURE, validationConclusions, validationJobName } from './github.js';
 
 const DESCRIPTION_LIMIT = 140;
 
@@ -43,12 +43,16 @@ for (const decision of decisions) {
     continue;
   }
 
-  await github.post(`/repos/{repository}/statuses/${decision.headSha}`, {
-    context: STATUS_CONTEXT,
-    state: passed ? 'success' : waiting ? 'pending' : 'failure',
-    description: outcome.slice(0, DESCRIPTION_LIMIT),
-    target_url: runUrl,
-  });
+  try {
+    await setStatus(github, decision.headSha, {
+      state: passed ? 'success' : waiting ? 'pending' : 'failure',
+      description: outcome.slice(0, DESCRIPTION_LIMIT),
+      targetUrl: runUrl,
+    });
+  } catch (error) {
+    console.error(`#${decision.number}: status not set (${error.message})`);
+    process.exitCode = 1;
+  }
 }
 
 if (process.env.GITHUB_STEP_SUMMARY) {

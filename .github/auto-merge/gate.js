@@ -12,7 +12,8 @@ export const MERGEABLE_TIERS = [ 'P1', 'P2' ];
 const DECLARATION_PATH = /^declarations\/([^/]+)\.json$/;
 const HISTORY_SUFFIX = '.history';
 const REGULAR_FILE_MODE = '100644';
-const SELECTOR_KEYS = [ 'select', 'remove', 'executeClientScripts' ];
+// executeClientScripts is not a selector: it changes how the document is fetched, so changing it leaves the tiers that merge automatically
+const SELECTOR_KEYS = [ 'select', 'remove' ];
 const VALID_UNTIL_FORMAT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
 const IPV4_FORMAT = /^\d+(\.\d+){3}$/;
 
@@ -250,14 +251,18 @@ export function classify(mainDeclaration, headDeclaration) {
   return { tier, modifiedTypes, modifiedLocations };
 }
 
-export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now }) {
+export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now, declaredSince }) {
   if (!isPlainObject(headHistory)) {
     refuse('a history file is not an object');
   }
 
   for (const type of new Set([ ...Object.keys(mainHistory), ...Object.keys(headHistory), ...modifiedTypes ])) {
-    const previousEntries = mainHistory[type] ?? [];
-    const entries = headHistory[type] ?? [];
+    if (!Object.hasOwn(mainHistory, type) && !Object.hasOwn(mainDeclaration.terms, type)) {
+      refuse('a history file adds terms that the declaration does not have');
+    }
+
+    const previousEntries = Object.hasOwn(mainHistory, type) ? mainHistory[type] : [];
+    const entries = Object.hasOwn(headHistory, type) ? headHistory[type] : [];
 
     if (!Array.isArray(entries) || entries.length < previousEntries.length) {
       refuse('a history file drops existing entries');
@@ -305,6 +310,11 @@ export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifi
 
     if (lastPreviousEntry && Date.parse(validUntil) <= Date.parse(lastPreviousEntry.validUntil)) {
       refuse('a new history entry is not more recent than the existing ones');
+    }
+
+    // The replaced declaration was in force at least since the last change of its file on main
+    if (declaredSince && Date.parse(validUntil) < Date.parse(declaredSince)) {
+      refuse('a new history entry is valid until a date before the declaration it replaces was committed');
     }
   }
 }
@@ -383,6 +393,7 @@ export function createGit(repositoryPath) {
     mergeBase: (first, second) => run('merge-base', first, second).toString().trim(),
     blob: sha => run('cat-file', 'blob', sha),
     blobSize: sha => Number(run('cat-file', '-s', sha).toString()),
+    lastChange: (commit, path) => run('log', '-1', '--format=%cI', commit, '--', path).toString().trim(),
     declarationsTree(commit) {
       const tree = new Map();
 
@@ -463,6 +474,11 @@ function checkFiles({ changes, mainTree, limits }) {
   return { services };
 }
 
+// A pull request is validated on the main that was evaluated: a later change of main keeps that validation only if it touches the declarations of other services
+export function invalidatesValidation({ changedPaths, serviceIds }) {
+  return changedPaths.some(path => !path.startsWith('declarations/') || serviceIds.some(id => path.startsWith(`declarations/${id}.`)));
+}
+
 export function evaluate({ pullRequest, git, config, mainRef = 'refs/remotes/origin/main', now = new Date() }) {
   const limits = { ...DEFAULT_LIMITS, ...config.limits };
   const result = { number: pullRequest.number, headSha: pullRequest.head?.sha, tier: null, services: [], files: [] };
@@ -521,7 +537,7 @@ export function evaluate({ pullRequest, git, config, mainRef = 'refs/remotes/ori
         }
 
         modifiedLocations.forEach(location => checkLocation(location, { sharedHosts: config.sharedHosts, limits }));
-        checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now });
+        checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now, declaredSince: git.lastChange(main, declaration.path) });
 
         result.services.push({ id: serviceId, types: modifiedTypes });
         result.files.push({ path: declaration.path, sha: declaration.newSha }, { path: history.path, sha: history.newSha });

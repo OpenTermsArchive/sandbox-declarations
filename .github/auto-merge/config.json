@@ -1,4 +1,16 @@
 {
-  "sharedHosts": [],
+  "sharedHosts": [
+    "github.com",
+    "githubusercontent.com",
+    "gitlab.com",
+    "bitbucket.org",
+    "docs.google.com",
+    "drive.google.com",
+    "sites.google.com",
+    "notion.so",
+    "medium.com",
+    "substack.com",
+    "web.archive.org"
+  ],
   "limits": {}
 }

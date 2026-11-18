@@ -5,10 +5,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { checkLocation, classify, createGit, evaluate, parseStrictJSON, Refusal } from './gate.js';
+import { checkLocation, classify, createGit, evaluate, invalidatesValidation, parseStrictJSON, Refusal } from './gate.js';
 
 const NOW = new Date('2026-11-18T00:00:00Z');
 const CONFIG = { sharedHosts: ['shared.example'], limits: {} };
+const COMMIT_DATE = '2026-01-01T00:00:00Z'; // fixed, since the last change of a declaration bounds the dates of its history
 
 const MAIN_DECLARATION = {
   name: 'Service',
@@ -34,7 +35,7 @@ describe('gate', () => {
   let git;
   let pullRequestCount = 0;
 
-  const run = (...args) => execFileSync('git', [ '-C', repositoryPath, ...args ], { stdio: [ 'ignore', 'pipe', 'pipe' ] }).toString().trim();
+  const run = (...args) => execFileSync('git', [ '-C', repositoryPath, ...args ], { stdio: [ 'ignore', 'pipe', 'pipe' ], env: { ...process.env, GIT_AUTHOR_DATE: COMMIT_DATE, GIT_COMMITTER_DATE: COMMIT_DATE } }).toString().trim();
 
   function commit(files, message) {
     for (const [ filePath, content ] of Object.entries(files)) {
@@ -73,7 +74,7 @@ describe('gate', () => {
     };
   }
 
-  const decide = pullRequest => evaluate({ pullRequest, git, config: CONFIG, mainRef: 'refs/heads/main', now: NOW });
+  const decide = (pullRequest, config = CONFIG) => evaluate({ pullRequest, git, config, mainRef: 'refs/heads/main', now: NOW });
 
   function assertRefused(decision, reasonPattern) {
     assert.equal(decision.eligible, false);
@@ -152,11 +153,35 @@ describe('gate', () => {
       'an added terms type': { ...MAIN_DECLARATION, terms: { ...MAIN_DECLARATION.terms, Imprint: { fetch: 'https://service.example/imprint', select: 'body' } } },
       'a removed terms type': { ...MAIN_DECLARATION, terms: { 'Terms of Service': fixedDeclaration().terms['Terms of Service'] } },
       'an unknown key': fixedDeclaration({ unknown: true }),
+      'enabled client scripts': fixedDeclaration({ executeClientScripts: true }),
     })) {
       it(`puts ${title} in tier P3`, () => {
         assert.equal(classify(MAIN_DECLARATION, declaration).tier, 'P3');
       });
     }
+
+    describe('combined documents', () => {
+      const combined = combine => ({ name: 'Service', terms: { 'Terms of Service': { combine } } });
+      const mainCombined = combined([{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/b' }]);
+
+      it('puts a changed selector of a combined document in tier P1', () => {
+        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.new' }, { fetch: 'https://service.example/b', remove: '.ad' }])), { tier: 'P1', modifiedTypes: ['Terms of Service'], modifiedLocations: [] });
+      });
+
+      it('puts a combined document moved on the same host in tier P2', () => {
+        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/c' }])), { tier: 'P2', modifiedTypes: ['Terms of Service'], modifiedLocations: ['https://service.example/c'] });
+      });
+
+      for (const [ title, combine ] of Object.entries({
+        'an added combined document': [{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/b' }, { fetch: 'https://service.example/c' }],
+        'a removed combined document': [{ fetch: 'https://service.example/a', select: '.a' }],
+        'a combined document moved to another host': [{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://elsewhere.example/b' }],
+      })) {
+        it(`puts ${title} in tier P3`, () => {
+          assert.equal(classify(mainCombined, combined(combine)).tier, 'P3');
+        });
+      }
+    });
   });
 
   describe('files', () => {
@@ -173,7 +198,7 @@ describe('gate', () => {
     }
 
     it('refuses a declaration replaced by a directory', () => {
-      assertRefused(decide(openPullRequest({ 'declarations/Service.json': null, 'declarations/Service.json/payload.json': '{}\n' })), /deletes a file|something else than JSON files/);
+      assertRefused(decide(openPullRequest({ 'declarations/Service.json': null, 'declarations/Service.json/payload.json': '{}\n' })), /deletes a file/);
     });
 
     it('refuses more files than a declaration fix needs', () => {
@@ -279,6 +304,19 @@ describe('gate', () => {
       });
     }
 
+    for (const [ title, entries ] of [
+      [ 'empty', null ],
+      [ 'without entries', [] ],
+    ]) {
+      it(`refuses terms that the declaration does not have, ${title}`, () => {
+        assertRefused(withHistory({ ...fixedHistory(), Unknown: entries }), /does not have/);
+      });
+    }
+
+    it('refuses an entry valid until before the declaration it replaces was committed', () => {
+      assertRefused(withHistory(fixedHistory('2025-06-01T00:00:00Z')), /before the declaration it replaces/);
+    });
+
     it('refuses an entry older than the existing ones', () => {
       const declaration = { ...MAIN_DECLARATION, terms: { ...MAIN_DECLARATION.terms, 'Privacy Policy': { ...MAIN_DECLARATION.terms['Privacy Policy'], select: '.new' } } };
       const history = { 'Privacy Policy': [ ...MAIN_HISTORY['Privacy Policy'], { ...MAIN_DECLARATION.terms['Privacy Policy'], validUntil: '2023-01-01T00:00:00Z' }] };
@@ -325,10 +363,36 @@ describe('gate', () => {
     it('refuses a host where anyone can publish', () => refuses('https://someone.shared.example/terms', /anyone can publish/));
     it('refuses a location that is not canonical', () => refuses('https://service.example/a/../terms', /canonical/));
 
+    describe('with the configuration of the collection', () => {
+      const config = JSON.parse(fs.readFileSync(new URL('./config.json', import.meta.url)));
+
+      // Hosts that declarations of this collection track, where anyone can publish a page
+      for (const location of [ 'https://gist.github.com/someone/1234', 'https://substack.com/home/post/p-1234' ]) {
+        it(`refuses ${location}`, () => {
+          assert.throws(() => checkLocation(location, config), error => error instanceof Refusal && /anyone can publish/.test(error.message));
+        });
+      }
+    });
+
+    it('refuses a location moved on a host where anyone can publish in a pull request', () => {
+      const pullRequest = openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://service.example/someone/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
+
+      assertRefused(decide(pullRequest, { ...CONFIG, sharedHosts: ['service.example'] }), /anyone can publish/);
+    });
+
     it('refuses such a location in a pull request', () => {
       const pullRequest = openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://service.example:8443/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
 
-      assertRefused(decide(pullRequest), /tier P3|port/);
+      assertRefused(decide(pullRequest), /sets a port/);
     });
+  });
+
+  describe('changes on main since the validation', () => {
+    const invalidates = changedPaths => invalidatesValidation({ changedPaths, serviceIds: ['Service'] });
+
+    it('keeps the validation when main changed nothing', () => assert.equal(invalidates([]), false));
+    it('keeps the validation when main changed other services', () => assert.equal(invalidates([ 'declarations/Other.json', 'declarations/Other.history.json', 'declarations/Other.filters.js' ]), false));
+    it('drops the validation when main changed the filters of the service', () => assert.equal(invalidates(['declarations/Service.filters.js']), true));
+    it('drops the validation when main changed the engine', () => assert.equal(invalidates(['package-lock.json']), true));
   });
 });

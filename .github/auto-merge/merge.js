@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-import { createGit, evaluate } from './gate.js';
-import { createGitHub, validationConclusions, validationJobName } from './github.js';
+import { createGit, evaluate, invalidatesValidation } from './gate.js';
+import { createGitHub, ownApproval, validationConclusions, validationJobName } from './github.js';
 
 const MERGED_LABEL = 'auto-merged';
 
@@ -19,7 +19,7 @@ const { values: options } = parseArgs({
 });
 
 const config = JSON.parse(fs.readFileSync(options.config));
-const { decisions } = JSON.parse(fs.readFileSync(options.decisions));
+const { main: validatedMain, decisions } = JSON.parse(fs.readFileSync(options.decisions));
 const limit = Number.parseInt(options.limit, 10) || 0;
 const reader = createGitHub({ token: process.env.GITHUB_TOKEN, repository: process.env.GITHUB_REPOSITORY });
 const merger = createGitHub({ token: process.env.MERGE_TOKEN, repository: process.env.GITHUB_REPOSITORY });
@@ -55,14 +55,38 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
   }
 
   // Earlier merges of this run moved main, and the pull request may have changed since it was evaluated: nothing decided before this point is taken for granted
-  const pullRequest = await reader.get(`/repos/{repository}/pulls/${decision.number}`);
+  let review;
 
-  execFileSync('git', [ 'fetch', '--quiet', 'origin', '+refs/heads/main:refs/remotes/origin/main', `+refs/pull/${decision.number}/head:refs/pr/${decision.number}` ]);
+  try {
+    const pullRequest = await reader.get(`/repos/{repository}/pulls/${decision.number}`);
 
-  const current = evaluate({ pullRequest, git, config });
+    execFileSync('git', [ 'fetch', '--quiet', 'origin', '+refs/heads/main:refs/remotes/origin/main', `+refs/pull/${decision.number}/head:refs/pr/${decision.number}` ]);
 
-  if (pullRequest.state !== 'open' || !current.eligible || current.headSha !== decision.headSha || JSON.stringify(current.files) !== JSON.stringify(decision.files)) {
-    console.log(`#${decision.number}: no longer what was tested (${current.reason})`);
+    const current = evaluate({ pullRequest, git, config });
+
+    if (pullRequest.state !== 'open' || !current.eligible || current.headSha !== decision.headSha || JSON.stringify(current.files) !== JSON.stringify(decision.files)) {
+      console.log(`#${decision.number}: no longer what was tested (${current.reason})`);
+      continue;
+    }
+
+    const changedPaths = git.changes(validatedMain, git.resolve('refs/remotes/origin/main')).map(change => change.path);
+
+    if (invalidatesValidation({ changedPaths, serviceIds: decision.services.map(service => service.id) })) {
+      console.log(`#${decision.number}: main changed since the validation, left for the next run`);
+      continue;
+    }
+
+    const { failedBefore, approval } = ownApproval(await reader.list(`/repos/{repository}/pulls/${decision.number}/reviews?per_page=100`), { login: process.env.MERGE_BOT, sha: decision.headSha });
+
+    if (failedBefore) {
+      console.log(`#${decision.number}: merging this commit already failed, left for a new commit or a maintainer`);
+      continue;
+    }
+
+    review = approval;
+  } catch (error) {
+    console.log(`#${decision.number}: could not be checked again (${error.message})`);
+    process.exitCode = 1;
     continue;
   }
 
@@ -75,10 +99,8 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
     continue;
   }
 
-  let review;
-
   try {
-    review = await merger.post(`/repos/{repository}/pulls/${decision.number}/reviews`, { commit_id: decision.headSha, event: 'APPROVE' });
+    review ??= await merger.post(`/repos/{repository}/pulls/${decision.number}/reviews`, { commit_id: decision.headSha, event: 'APPROVE' });
     // The title and the message are written here because those of the pull request are free text: "[skip ci]" in them would keep the merge from being deployed
     await merger.put(`/repos/{repository}/pulls/${decision.number}/merge`, { sha: decision.headSha, merge_method: 'squash', commit_title: title, commit_message: message });
   } catch (error) {
