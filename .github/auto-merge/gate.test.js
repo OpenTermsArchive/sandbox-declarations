@@ -159,6 +159,29 @@ describe('gate', () => {
         assert.equal(classify(MAIN_DECLARATION, declaration).tier, 'P3');
       });
     }
+
+    describe('combined documents', () => {
+      const combined = combine => ({ name: 'Service', terms: { 'Terms of Service': { combine } } });
+      const mainCombined = combined([{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/b' }]);
+
+      it('puts a changed selector of a combined document in tier P1', () => {
+        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.new' }, { fetch: 'https://service.example/b', remove: '.ad' }])), { tier: 'P1', modifiedTypes: ['Terms of Service'], modifiedLocations: [] });
+      });
+
+      it('puts a combined document moved on the same host in tier P2', () => {
+        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/c' }])), { tier: 'P2', modifiedTypes: ['Terms of Service'], modifiedLocations: ['https://service.example/c'] });
+      });
+
+      for (const [ title, combine ] of Object.entries({
+        'an added combined document': [{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/b' }, { fetch: 'https://service.example/c' }],
+        'a removed combined document': [{ fetch: 'https://service.example/a', select: '.a' }],
+        'a combined document moved to another host': [{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://elsewhere.example/b' }],
+      })) {
+        it(`puts ${title} in tier P3`, () => {
+          assert.equal(classify(mainCombined, combined(combine)).tier, 'P3');
+        });
+      }
+    });
   });
 
   describe('files', () => {
