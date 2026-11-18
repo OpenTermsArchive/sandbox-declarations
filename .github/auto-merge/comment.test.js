@@ -20,7 +20,8 @@ describe('comment', () => {
     it('says that a maintainer reviews a pull request outside what merges on its own', () => {
       const text = commentOn(refused('the pull request changes something else than JSON files in the declarations directory'));
 
-      assert.match(text, /A maintainer will review it\./);
+      assert.match(text, /A maintainer has to review it\./);
+      assert.doesNotMatch(text, /will review/);
       assert.doesNotMatch(text, /evaluated again/);
     });
 
@@ -31,7 +32,7 @@ describe('comment', () => {
     });
 
     it('sends to a maintainer a new address on a host where anyone can publish', () => {
-      assert.match(commentOn(refused('a fetch location changes on a host where anyone can publish')), /A maintainer will review it\./);
+      assert.match(commentOn(refused('a fetch location changes on a host where anyone can publish')), /A maintainer has to review it\./);
     });
 
     it('points to the check when the validation fails', () => {

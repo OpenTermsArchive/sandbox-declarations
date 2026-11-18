@@ -44,8 +44,8 @@ export function commentFor(decision, { validation, hasComment }) {
     }
 
     const nextStep = LEFT_TO_A_MAINTAINER.some(pattern => pattern.test(decision.reason))
-      ? 'A maintainer will review it.'
-      : 'Once the pull request is updated, it is evaluated again within the hour. If the change cannot follow this rule, a maintainer will review it.';
+      ? 'A maintainer has to review it.'
+      : 'Once the pull request is updated, it is evaluated again within the hour. If the change cannot follow this rule, a maintainer has to review it.';
 
     return body(`This pull request is not merged automatically: ${explain(decision.reason)}.`, nextStep);
   }
@@ -61,7 +61,7 @@ export function commentFor(decision, { validation, hasComment }) {
   // Also said on later runs, which skip a commit whose validation already failed: the comment then still holds the reason, whatever it said before. It points to the status rather than to a run, so that it reads the same on every run
   return body(
     'This pull request is not merged automatically: the declaration does not pass validation with the engine of the main branch. The details are behind the "Details" link of the `auto-merge` check.',
-    'Once the pull request is updated, it is validated again within the hour. If the page cannot be reached from the servers of GitHub, a maintainer will review it.',
+    'Once the pull request is updated, it is validated again within the hour. If the page cannot be reached from the servers of GitHub, a maintainer has to review it.',
   );
 }
 
