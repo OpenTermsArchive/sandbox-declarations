@@ -97,7 +97,8 @@ jobs:
 
   report:
     needs: [ evaluate, validate ]
-    if: always() && needs.evaluate.result == 'success'
+    # Not on a cancelled run: its cancelled validations would be reported as failures
+    if: ${{ !cancelled() && needs.evaluate.result == 'success' }}
     runs-on: ubuntu-22.04
     permissions:
       contents: read
