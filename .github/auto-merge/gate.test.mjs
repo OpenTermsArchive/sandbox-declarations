@@ -188,6 +188,12 @@ describe('gate', () => {
       assertRefused(decide(openPullRequest({ 'declarations/Service.json': null, 'declarations/Service.json/payload.json': '{}\n' })), /deletes a file|something else than JSON files/);
     });
 
+    it('refuses more files than a declaration fix needs', () => {
+      const files = Object.fromEntries(Array.from({ length: 11 }, (_, index) => [ `declarations/Service ${index}.json`, '{}\n' ]));
+
+      assertRefused(decide(openPullRequest(files)), /too many files/);
+    });
+
     it('refuses a deleted declaration', () => {
       assertRefused(decide(openPullRequest({ 'declarations/Other.json': null })), /deletes a file/);
     });
