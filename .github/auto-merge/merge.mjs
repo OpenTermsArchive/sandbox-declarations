@@ -27,6 +27,22 @@ const conclusions = await validationConclusions(reader, process.env.GITHUB_RUN_I
 const git = createGit('.');
 let merged = 0;
 
+// GitHub closes the issues a pull request fixes on behalf of whoever merges it, and the merging application has no right on issues: it is done here instead
+async function closeLinkedIssues(pullRequestNumber) {
+  const [ owner, name ] = process.env.GITHUB_REPOSITORY.split('/');
+  const { data } = await reader.post('https://api.github.com/graphql', {
+    query: 'query($owner: String!, $name: String!, $number: Int!) { repository(owner: $owner, name: $name) { pullRequest(number: $number) { closingIssuesReferences(first: 50) { nodes { number state repository { nameWithOwner } } } } } }',
+    variables: { owner, name, number: pullRequestNumber },
+  });
+
+  for (const issue of data.repository.pullRequest.closingIssuesReferences.nodes) {
+    if (issue.state === 'OPEN' && issue.repository.nameWithOwner === process.env.GITHUB_REPOSITORY) {
+      await reader.patch(`/repos/{repository}/issues/${issue.number}`, { state: 'closed', state_reason: 'completed' });
+      console.log(`#${pullRequestNumber}: closed issue #${issue.number}`);
+    }
+  }
+}
+
 for (const decision of decisions.filter(({ eligible }) => eligible)) {
   if (conclusions.get(validationJobName(decision.number)) !== 'success') {
     console.log(`#${decision.number}: validation did not pass or did not run`);
@@ -73,6 +89,7 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
   merged++;
   console.log(`#${decision.number}: merged`);
   await merger.post(`/repos/{repository}/issues/${decision.number}/labels`, { labels: [MERGED_LABEL] }).catch(error => console.log(`#${decision.number}: label not set (${error.message})`));
+  await closeLinkedIssues(decision.number).catch(error => console.log(`#${decision.number}: linked issues not closed (${error.message})`));
 }
 
 console.log(`${merged} pull request(s) ${options['dry-run'] ? 'would be ' : ''}merged`);

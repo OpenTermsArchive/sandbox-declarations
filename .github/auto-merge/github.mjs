@@ -30,6 +30,7 @@ export function createGitHub({ token, repository }) {
     get: async path => (await request('GET', path)).data,
     post: async (path, body) => (await request('POST', path, body)).data,
     put: async (path, body) => (await request('PUT', path, body)).data,
+    patch: async (path, body) => (await request('PATCH', path, body)).data,
     async list(path, pick = data => data) {
       const items = [];
 
