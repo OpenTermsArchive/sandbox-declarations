@@ -40,7 +40,7 @@ for (const decision of decisions) {
   rows.push(`| #${decision.number} | ${decision.tier ?? ''} | ${passed ? 'pass' : 'fail'} | ${outcome} |`);
 
   try {
-    await setComment(github, decision.number, ({ hasComment }) => commentFor(decision, { validation, runUrl, hasComment }));
+    await setComment(github, decision.number, ({ hasComment }) => commentFor(decision, { validation, hasComment }));
   } catch (error) {
     console.error(`#${decision.number}: comment not set (${error.message})`);
     process.exitCode = 1;

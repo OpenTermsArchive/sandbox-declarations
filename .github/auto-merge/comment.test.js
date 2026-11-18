@@ -3,10 +3,9 @@ import { describe, it, mock } from 'node:test';
 
 import { COMMENT_AUTHOR, COMMENT_MARKER, commentFor, setComment } from './comment.js';
 
-const RUN_URL = 'https://github.com/owner/repository/actions/runs/2';
 const refused = reason => ({ number: 1, eligible: false, reason });
 const eligible = validation => ({ number: 1, eligible: true, tier: 'P1', validation });
-const commentOn = (decision, { validation = null, hasComment = false } = {}) => commentFor(decision, { validation, runUrl: RUN_URL, hasComment });
+const commentOn = (decision, { validation = null, hasComment = false } = {}) => commentFor(decision, { validation, hasComment });
 
 describe('comment', () => {
   describe('content', () => {
@@ -35,11 +34,8 @@ describe('comment', () => {
       assert.match(commentOn(refused('a fetch location changes on a host where anyone can publish')), /A maintainer will review it\./);
     });
 
-    it('points to the run when the validation fails', () => {
-      const text = commentOn(eligible('selected'), { validation: 'failure' });
-
-      assert.match(text, /does not pass validation/);
-      assert.ok(text.includes(`(${RUN_URL})`));
+    it('points to the check when the validation fails', () => {
+      assert.match(commentOn(eligible('selected'), { validation: 'failure' }), /does not pass validation.*`auto-merge` check/);
     });
 
     for (const reason of [ 'the pull request is a draft', 'the pull request is on hold', 'the pull request changed while it was being evaluated', 'the evaluation could not be completed' ]) {
@@ -48,8 +44,14 @@ describe('comment', () => {
       });
     }
 
-    it('keeps the comment of a validation that already failed on this commit', () => {
-      assert.equal(commentOn(eligible('failed-before'), { hasComment: true }), null);
+    it('says the same on later runs as on the run where the validation failed', () => {
+      const failed = commentOn(eligible('selected'), { validation: 'failure' });
+
+      assert.equal(commentOn(eligible('failed-before'), { hasComment: true }), failed);
+    });
+
+    it('replaces the reason of an earlier refusal once the validation failed', () => {
+      assert.match(commentOn(eligible('failed-before'), { hasComment: true }), /does not pass validation/);
     });
 
     it('does not comment a pull request that passes, unless a comment has to be corrected', () => {

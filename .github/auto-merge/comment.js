@@ -37,7 +37,7 @@ function body(...paragraphs) {
 }
 
 // Returns the body of the comment, or null to leave the pull request as it is. `hasComment` tells whether the pull request already has one, which then has to be kept up to date
-export function commentFor(decision, { validation, runUrl, hasComment }) {
+export function commentFor(decision, { validation, hasComment }) {
   if (!decision.eligible) {
     if (NOT_COMMENTED.some(pattern => pattern.test(decision.reason))) {
       return null;
@@ -50,10 +50,6 @@ export function commentFor(decision, { validation, runUrl, hasComment }) {
     return body(`This pull request is not merged automatically: ${explain(decision.reason)}.`, nextStep);
   }
 
-  if (decision.validation === 'failed-before') {
-    return null;
-  }
-
   if (decision.validation === 'deferred') {
     return hasComment ? body('This pull request is waiting for its validation, which runs within the next hours.') : null;
   }
@@ -62,8 +58,9 @@ export function commentFor(decision, { validation, runUrl, hasComment }) {
     return hasComment ? body('The tests pass: this pull request will be merged automatically.') : null;
   }
 
+  // Also said on later runs, which skip a commit whose validation already failed: the comment then still holds the reason, whatever it said before. It points to the status rather than to a run, so that it reads the same on every run
   return body(
-    `This pull request is not merged automatically: the declaration does not pass validation with the engine of the main branch. The details are in [the run](${runUrl}).`,
+    'This pull request is not merged automatically: the declaration does not pass validation with the engine of the main branch. The details are behind the "Details" link of the `auto-merge` check.',
     'Once the pull request is updated, it is validated again within the hour. If the page cannot be reached from the servers of GitHub, a maintainer will review it.',
   );
 }
