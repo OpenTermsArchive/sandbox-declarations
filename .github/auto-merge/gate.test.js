@@ -101,11 +101,11 @@ describe('gate', () => {
   after(() => fs.rmSync(repositoryPath, { recursive: true, force: true }));
 
   describe('eligible pull requests', () => {
-    it('accepts a selector fix with its history entry in tier P1', () => {
+    it('accepts a selector fix with its history entry', () => {
       const decision = decide(openPullRequest({ 'declarations/Service.json': json(fixedDeclaration()), 'declarations/Service.history.json': json(fixedHistory()) }));
 
       assert.equal(decision.eligible, true, decision.reason);
-      assert.equal(decision.tier, 'P1');
+      assert.equal(decision.withinScope, true);
       assert.deepEqual(decision.services, [{ id: 'Service', types: ['Terms of Service'] }]);
       assert.deepEqual(decision.files.map(file => file.path), [ 'declarations/Service.json', 'declarations/Service.history.json' ]);
     });
@@ -118,11 +118,10 @@ describe('gate', () => {
       assert.equal(decision.eligible, true, decision.reason);
     });
 
-    it('classifies a path change on the same host in tier P2', () => {
+    it('accepts a path change on the same host', () => {
       const decision = decide(openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://service.example/legal/terms' })), 'declarations/Service.history.json': json(fixedHistory()) }));
 
       assert.equal(decision.eligible, true, decision.reason);
-      assert.equal(decision.tier, 'P2');
     });
 
     it('still accepts a pull request when main moved without touching its files', () => {
@@ -134,17 +133,17 @@ describe('gate', () => {
     });
   });
 
-  describe('tiers', () => {
+  describe('what merges on its own', () => {
     it('never merges a change of host', () => {
       const pullRequest = openPullRequest({ 'declarations/Service.json': json(fixedDeclaration({ fetch: 'https://elsewhere.example/terms' })), 'declarations/Service.history.json': json(fixedHistory()) });
 
-      assertRefused(decide(pullRequest), /tier P3/);
+      assertRefused(decide(pullRequest), /changes more than the selectors/);
     });
 
     it('never merges a new service', () => {
       const pullRequest = openPullRequest({ 'declarations/New.json': json({ name: 'New', terms: {} }) });
 
-      assertRefused(decide(pullRequest), /tier P4/);
+      assertRefused(decide(pullRequest), /adds a new service/);
     });
 
     for (const [ title, declaration ] of Object.entries({
@@ -154,8 +153,8 @@ describe('gate', () => {
       'a removed terms type': { ...MAIN_DECLARATION, terms: { 'Terms of Service': fixedDeclaration().terms['Terms of Service'] } },
       'an unknown key': fixedDeclaration({ unknown: true }),
     })) {
-      it(`puts ${title} in tier P3`, () => {
-        assert.equal(classify(MAIN_DECLARATION, declaration).tier, 'P3');
+      it(`leaves ${title} to a maintainer`, () => {
+        assert.equal(classify(MAIN_DECLARATION, declaration).mergeable, false);
       });
     }
 
@@ -164,8 +163,8 @@ describe('gate', () => {
       [ 'enabled', MAIN_DECLARATION, fixedDeclaration({ executeClientScripts: true }) ],
       [ 'disabled', fixedDeclaration({ executeClientScripts: true }), fixedDeclaration({ executeClientScripts: false }) ],
     ]) {
-      it(`puts client scripts ${title} in tier P1`, () => {
-        assert.deepEqual(classify(main, head), { tier: 'P1', modifiedTypes: ['Terms of Service'], modifiedLocations: [] });
+      it(`merges client scripts ${title}`, () => {
+        assert.deepEqual(classify(main, head), { mergeable: true, modifiedTypes: ['Terms of Service'], modifiedLocations: [] });
       });
     }
 
@@ -173,12 +172,12 @@ describe('gate', () => {
       const combined = combine => ({ name: 'Service', terms: { 'Terms of Service': { combine } } });
       const mainCombined = combined([{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/b' }]);
 
-      it('puts a changed selector of a combined document in tier P1', () => {
-        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.new' }, { fetch: 'https://service.example/b', remove: '.ad' }])), { tier: 'P1', modifiedTypes: ['Terms of Service'], modifiedLocations: [] });
+      it('merges a changed selector of a combined document', () => {
+        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.new' }, { fetch: 'https://service.example/b', remove: '.ad' }])), { mergeable: true, modifiedTypes: ['Terms of Service'], modifiedLocations: [] });
       });
 
-      it('puts a combined document moved on the same host in tier P2', () => {
-        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/c' }])), { tier: 'P2', modifiedTypes: ['Terms of Service'], modifiedLocations: ['https://service.example/c'] });
+      it('merges a combined document moved on the same host', () => {
+        assert.deepEqual(classify(mainCombined, combined([{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://service.example/c' }])), { mergeable: true, modifiedTypes: ['Terms of Service'], modifiedLocations: ['https://service.example/c'] });
       });
 
       for (const [ title, combine ] of Object.entries({
@@ -186,8 +185,8 @@ describe('gate', () => {
         'a removed combined document': [{ fetch: 'https://service.example/a', select: '.a' }],
         'a combined document moved to another host': [{ fetch: 'https://service.example/a', select: '.a' }, { fetch: 'https://elsewhere.example/b' }],
       })) {
-        it(`puts ${title} in tier P3`, () => {
-          assert.equal(classify(mainCombined, combined(combine)).tier, 'P3');
+        it(`leaves ${title} to a maintainer`, () => {
+          assert.equal(classify(mainCombined, combined(combine)).mergeable, false);
         });
       }
     });
@@ -234,7 +233,7 @@ describe('gate', () => {
     });
 
     it('refuses an added JSON file next to an existing service', () => {
-      assertRefused(decide(openPullRequest({ ...validFiles(), 'declarations/Service.filters.json': '{}\n' })), /tier P4/);
+      assertRefused(decide(openPullRequest({ ...validFiles(), 'declarations/Service.filters.json': '{}\n' })), /adds a new service/);
     });
 
     it('refuses a declaration that changes without its history', () => {

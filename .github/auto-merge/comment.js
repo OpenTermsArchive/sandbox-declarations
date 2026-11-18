@@ -3,14 +3,11 @@ export const COMMENT_AUTHOR = 'github-actions[bot]';
 
 const HEADER = '**Automatic merge**';
 
-const TIER_EXPLANATIONS = {
-  P3: 'it changes more than the selectors of a document or the address of a page on the same website',
-  P4: 'it adds a new service',
-};
-
 // Refusals that no change to the pull request can lift: the pull request is outside what merges on its own
 const LEFT_TO_A_MAINTAINER = [
-  /tier P\d/,
+  /adds a new service/,
+  /adds or removes terms/,
+  /changes more than/,
   /something else than JSON files/,
   /deletes a file/,
   /not a regular file/,
@@ -25,12 +22,6 @@ const NOT_COMMENTED = [
   /changed while it was being evaluated/,
   /could not be completed/,
 ];
-
-function explain(reason) {
-  const tier = reason.match(/tier (P\d)/)?.[1];
-
-  return TIER_EXPLANATIONS[tier] ?? reason;
-}
 
 function body(...paragraphs) {
   return [ COMMENT_MARKER, HEADER, ...paragraphs ].join('\n\n');
@@ -47,7 +38,7 @@ export function commentFor(decision, { validation, hasComment }) {
       ? 'A maintainer has to review it.'
       : 'Once the pull request is updated, it is evaluated again within the hour. If the change cannot follow this rule, a maintainer has to review it.';
 
-    return body(`This pull request is not merged automatically: ${explain(decision.reason)}.`, nextStep);
+    return body(`This pull request is not merged automatically: ${decision.reason}.`, nextStep);
   }
 
   if (decision.validation === 'deferred') {

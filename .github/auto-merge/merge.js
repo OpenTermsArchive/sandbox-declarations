@@ -91,7 +91,7 @@ for (const decision of decisions.filter(({ eligible }) => eligible)) {
   }
 
   const title = `Update ${decision.services.map(service => service.id).join(', ')} (#${decision.number})`;
-  const message = `Merged automatically in tier ${decision.tier}: the tests of the auto-merge workflow pass on ${decision.headSha}.`;
+  const message = `Merged automatically: the tests of the auto-merge workflow pass on ${decision.headSha}.`;
 
   if (options['dry-run']) {
     console.log(`#${decision.number}: would merge as "${title}"`);
