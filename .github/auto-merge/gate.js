@@ -257,8 +257,12 @@ export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifi
   }
 
   for (const type of new Set([ ...Object.keys(mainHistory), ...Object.keys(headHistory), ...modifiedTypes ])) {
-    const previousEntries = mainHistory[type] ?? [];
-    const entries = headHistory[type] ?? [];
+    if (!Object.hasOwn(mainHistory, type) && !Object.hasOwn(mainDeclaration.terms, type)) {
+      refuse('a history file adds terms that the declaration does not have');
+    }
+
+    const previousEntries = Object.hasOwn(mainHistory, type) ? mainHistory[type] : [];
+    const entries = Object.hasOwn(headHistory, type) ? headHistory[type] : [];
 
     if (!Array.isArray(entries) || entries.length < previousEntries.length) {
       refuse('a history file drops existing entries');

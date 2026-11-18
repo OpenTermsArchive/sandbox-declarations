@@ -280,6 +280,15 @@ describe('gate', () => {
       });
     }
 
+    for (const [ title, entries ] of [
+      [ 'empty', null ],
+      [ 'without entries', [] ],
+    ]) {
+      it(`refuses terms that the declaration does not have, ${title}`, () => {
+        assertRefused(withHistory({ ...fixedHistory(), Unknown: entries }), /does not have/);
+      });
+    }
+
     it('refuses an entry older than the existing ones', () => {
       const declaration = { ...MAIN_DECLARATION, terms: { ...MAIN_DECLARATION.terms, 'Privacy Policy': { ...MAIN_DECLARATION.terms['Privacy Policy'], select: '.new' } } };
       const history = { 'Privacy Policy': [ ...MAIN_HISTORY['Privacy Policy'], { ...MAIN_DECLARATION.terms['Privacy Policy'], validUntil: '2023-01-01T00:00:00Z' }] };
