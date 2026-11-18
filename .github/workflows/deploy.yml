@@ -1,0 +1,14 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+permissions: {}
+
+jobs:
+  witness:
+    # Stands in for the real deployment: this collection has no server, the run only shows that a merge would have triggered one
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "A deployment would have been triggered for $GITHUB_SHA"
