@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it, mock } from 'node:test';
 
-import { createGitHub } from './github.js';
+import { createGitHub, setStatus, STATUS_CONTEXT } from './github.js';
 
 const github = createGitHub({ token: 'token', repository: 'owner/repository' });
 
@@ -20,6 +20,39 @@ describe('github', () => {
 
       await assert.rejects(github.post('/repos/{repository}/pulls/1/reviews', { event: 'APPROVE' }), { status: 502 });
       assert.equal(fetch.mock.callCount(), 1);
+    });
+  });
+
+  describe('statuses', () => {
+    const status = { state: 'failure', description: 'a declaration changes while its history file does not', targetUrl: 'https://github.com/owner/repository/actions/runs/2' };
+
+    function fakeGitHub(statuses) {
+      return { get: mock.fn(async () => statuses), post: mock.fn(async () => ({})) };
+    }
+
+    it('posts a status that differs from the last one', async () => {
+      const fake = fakeGitHub([{ context: STATUS_CONTEXT, state: 'pending', description: 'waiting for validation' }]);
+
+      await setStatus(fake, 'sha', status);
+
+      assert.deepEqual(fake.post.mock.calls[0].arguments, [ '/repos/{repository}/statuses/sha', { context: STATUS_CONTEXT, state: 'failure', description: status.description, target_url: status.targetUrl }]);
+    });
+
+    // GitHub refuses more than 1000 statuses per commit and context, which hourly runs reach in about 42 days
+    it('does not post again the last status', async () => {
+      const fake = fakeGitHub([{ context: STATUS_CONTEXT, state: 'failure', description: status.description }]);
+
+      await setStatus(fake, 'sha', status);
+
+      assert.equal(fake.post.mock.callCount(), 0);
+    });
+
+    it('only compares with the statuses of its own context', async () => {
+      const fake = fakeGitHub([{ context: 'other', state: 'failure', description: status.description }]);
+
+      await setStatus(fake, 'sha', status);
+
+      assert.equal(fake.post.mock.callCount(), 1);
     });
   });
 });

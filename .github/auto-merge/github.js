@@ -54,6 +54,18 @@ export function createGitHub({ token, repository }) {
   };
 }
 
+// GitHub refuses more than 1000 statuses per commit and context: a status equal to the last one is not posted again
+export async function setStatus(github, sha, { state, description, targetUrl }) {
+  const statuses = await github.get(`/repos/{repository}/commits/${sha}/statuses?per_page=100`);
+  const lastStatus = statuses.find(status => status.context === STATUS_CONTEXT);
+
+  if (lastStatus?.state === state && lastStatus.description === description) {
+    return;
+  }
+
+  await github.post(`/repos/{repository}/statuses/${sha}`, { context: STATUS_CONTEXT, state, description, target_url: targetUrl });
+}
+
 export function validationJobName(pullRequestNumber) {
   return `validate (#${pullRequestNumber})`;
 }
