@@ -251,7 +251,7 @@ export function classify(mainDeclaration, headDeclaration) {
   return { tier, modifiedTypes, modifiedLocations };
 }
 
-export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now }) {
+export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now, declaredSince }) {
   if (!isPlainObject(headHistory)) {
     refuse('a history file is not an object');
   }
@@ -310,6 +310,11 @@ export function checkHistory({ mainHistory, headHistory, mainDeclaration, modifi
 
     if (lastPreviousEntry && Date.parse(validUntil) <= Date.parse(lastPreviousEntry.validUntil)) {
       refuse('a new history entry is not more recent than the existing ones');
+    }
+
+    // The replaced declaration was in force at least since the last change of its file on main
+    if (declaredSince && Date.parse(validUntil) < Date.parse(declaredSince)) {
+      refuse('a new history entry is valid until a date before the declaration it replaces was committed');
     }
   }
 }
@@ -388,6 +393,7 @@ export function createGit(repositoryPath) {
     mergeBase: (first, second) => run('merge-base', first, second).toString().trim(),
     blob: sha => run('cat-file', 'blob', sha),
     blobSize: sha => Number(run('cat-file', '-s', sha).toString()),
+    lastChange: (commit, path) => run('log', '-1', '--format=%cI', commit, '--', path).toString().trim(),
     declarationsTree(commit) {
       const tree = new Map();
 
@@ -526,7 +532,7 @@ export function evaluate({ pullRequest, git, config, mainRef = 'refs/remotes/ori
         }
 
         modifiedLocations.forEach(location => checkLocation(location, { sharedHosts: config.sharedHosts, limits }));
-        checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now });
+        checkHistory({ mainHistory, headHistory, mainDeclaration, modifiedTypes, now, declaredSince: git.lastChange(main, declaration.path) });
 
         result.services.push({ id: serviceId, types: modifiedTypes });
         result.files.push({ path: declaration.path, sha: declaration.newSha }, { path: history.path, sha: history.newSha });

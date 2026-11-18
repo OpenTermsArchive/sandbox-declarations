@@ -9,6 +9,7 @@ import { checkLocation, classify, createGit, evaluate, parseStrictJSON, Refusal 
 
 const NOW = new Date('2026-11-18T00:00:00Z');
 const CONFIG = { sharedHosts: ['shared.example'], limits: {} };
+const COMMIT_DATE = '2026-01-01T00:00:00Z'; // fixed, since the last change of a declaration bounds the dates of its history
 
 const MAIN_DECLARATION = {
   name: 'Service',
@@ -34,7 +35,7 @@ describe('gate', () => {
   let git;
   let pullRequestCount = 0;
 
-  const run = (...args) => execFileSync('git', [ '-C', repositoryPath, ...args ], { stdio: [ 'ignore', 'pipe', 'pipe' ] }).toString().trim();
+  const run = (...args) => execFileSync('git', [ '-C', repositoryPath, ...args ], { stdio: [ 'ignore', 'pipe', 'pipe' ], env: { ...process.env, GIT_AUTHOR_DATE: COMMIT_DATE, GIT_COMMITTER_DATE: COMMIT_DATE } }).toString().trim();
 
   function commit(files, message) {
     for (const [ filePath, content ] of Object.entries(files)) {
@@ -288,6 +289,10 @@ describe('gate', () => {
         assertRefused(withHistory({ ...fixedHistory(), Unknown: entries }), /does not have/);
       });
     }
+
+    it('refuses an entry valid until before the declaration it replaces was committed', () => {
+      assertRefused(withHistory(fixedHistory('2025-06-01T00:00:00Z')), /before the declaration it replaces/);
+    });
 
     it('refuses an entry older than the existing ones', () => {
       const declaration = { ...MAIN_DECLARATION, terms: { ...MAIN_DECLARATION.terms, 'Privacy Policy': { ...MAIN_DECLARATION.terms['Privacy Policy'], select: '.new' } } };
