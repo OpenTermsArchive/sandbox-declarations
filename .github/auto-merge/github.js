@@ -17,8 +17,8 @@ export function createGitHub({ token, repository }) {
       body: body && JSON.stringify(body),
     });
 
-    // GitHub now and then answers with a server error to a request that succeeds when sent again
-    if (response.status >= 500 && attempt < ATTEMPTS) {
+    // GitHub now and then answers with a server error to a request that succeeds when sent again. A POST is not sent again: it may have been applied despite the error, and would then be applied twice, such as two approvals
+    if (response.status >= 500 && attempt < ATTEMPTS && method !== 'POST') {
       await new Promise(resolve => { setTimeout(resolve, attempt * 3000); });
 
       return request(method, path, body, attempt + 1);
