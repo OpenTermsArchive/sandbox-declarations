@@ -2,22 +2,27 @@
   "name": "Wire",
   "terms": {
     "Privacy Policy": {
-      "fetch": "https://wire.com/en/privacy-policy",
+      "fetch": "https://wire.com/en/legal/terms-of-use-personal/#legal3",
       "select": [
-        "#main"
-      ]
+        "#legal3 .text-regular:nth-child(1)",
+        "#legal3 > .legalbody > .container > .container-legal"
+      ],
+      "executeClientScripts": true
     },
     "Terms of Service": {
-      "fetch": "https://wire.com/en/terms-of-use-personal",
+      "fetch": "https://wire.com/en/legal/terms-of-use-personal/",
       "select": [
-        "#main"
-      ]
+        ".legalbody"
+      ],
+      "executeClientScripts": true
     },
     "Data Processor Agreement": {
-      "fetch": "https://wire.com/en/data-processing-addendum",
+      "fetch": "https://wire.com/en/legal/terms-of-use-personal/#legal4",
       "select": [
-        "#main"
-      ]
+        "#legal4 .text-regular:nth-child(1)",
+        "#legal4 > .legalbody > .container > .container-legal"
+      ],
+      "executeClientScripts": true
     }
   }
 }

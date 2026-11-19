@@ -6,17 +6,18 @@
       "select": "section[class=article-container]"
     },
     "Privacy Policy": {
-      "fetch": "https://safety.google/products/nest/",
+      "fetch": "https://safety.google/nest/",
       "select": [
-        "#page-content"
+        ".modular-page"
       ],
       "remove": [
-        ".safety-breadcrumb",
-        ".bsp-jumplinks",
-        ".glue-expansion-panels__toggle-all",
-        ".bsp-hideonbreakpoint-md",
-        "#shop-nest-in-the-google-store",
-        "#learn-how-safety-is-built-into-every-product-we-make",
+        ".glue-expansion-panels-toggle-all",
+        ".image-module",
+        ".icon",
+        "#nest-shop",
+        "#assistant-explore-more",
+        "#breadcrumb-google-nest",
+        "#nest-secondary-sticky-nav",
         "picture"
       ]
     }

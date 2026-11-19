@@ -5,28 +5,26 @@
     "Terms of Service": {
       "fetch": "https://www.surveymonkey.com/mp/legal/terms-of-use/",
       "select": [
-        "[class*=\"sm-contentWrapper-\"]"
+        ".sm-contentWrapper-0-2-1.sm-contentWrapperWithSidebar-0-2-2"
       ],
       "remove": [
         {
           "startBefore": ".asset-dropdown-versions-label",
-          "endAfter": "[class*=\"AssetDropdown_mdsAssetDropdown\"]"
+          "endAfter": "[class*=\"assetDropdownContainer\"]"
         },
-        "button",
         "[data-hidechapternav=\"true\"]"
       ]
     },
     "Privacy Policy": {
       "fetch": "https://www.surveymonkey.com/mp/legal/privacy/",
       "select": [
-        "[class*=\"sm-contentWrapper-\"]"
+        ".sm-contentWrapper-0-2-1.sm-contentWrapperWithSidebar-0-2-2"
       ],
       "remove": [
         {
           "startBefore": ".asset-dropdown-versions-label",
-          "endAfter": "[class*=\"AssetDropdown_mdsAssetDropdown\"]"
+          "endAfter": "[class*=\"assetDropdownContainer\"]"
         },
-        "button",
         "[data-hidechapternav=\"true\"]"
       ]
     }

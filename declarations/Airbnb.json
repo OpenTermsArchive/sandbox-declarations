@@ -4,10 +4,11 @@
     "Privacy Policy": {
       "fetch": "https://www.airbnb.co.uk/help/article/3175",
       "select": [
-        {
-          "startBefore": "h1",
-          "endBefore": "#CEP_ARTICLES_SECTION_0"
-        }
+        "main"
+      ],
+      "remove": [
+        ".t15kpzrz",
+        ".l94quoy"
       ],
       "executeClientScripts": true
     },

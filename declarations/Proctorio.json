@@ -4,12 +4,12 @@
     "Terms of Service": {
       "fetch": "https://proctorio.com/policies#all&all&tos&section-termsofservice",
       "select": [
-        ".policy-panel[data-policy=\"tos\"] .policy-content"
+        "#content #section-termsofservice"
       ],
       "remove": [
-        ".translation-notice",
-        ".download-txt-btn"
-      ]
+        ".section-summary-illustration"
+      ],
+      "executeClientScripts": true
     },
     "Privacy Policy": {
       "fetch": "https://proctorio.com/privacy",

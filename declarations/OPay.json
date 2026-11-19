@@ -4,9 +4,12 @@
     "Privacy Policy": {
       "fetch": "https://www.opayweb.com/privacy-policy/",
       "select": [
-        ".privacy-policy-page"
+        "#gatsby-focus-wrapper"
       ],
-      "executeClientScripts": true
+      "remove": [
+        ".bmusAl",
+        ".style__Nav-sc-w04utx-1"
+      ]
     }
   }
 }

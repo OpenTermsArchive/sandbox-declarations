@@ -13,12 +13,11 @@
     "Privacy Policy": {
       "fetch": "https://sketchfab.com/privacy",
       "select": [
-        ".static-simple"
+        "#terms"
       ],
       "remove": [
         "#toc"
-      ],
-      "executeClientScripts": true
+      ]
     }
   }
 }

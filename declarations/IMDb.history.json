@@ -4,11 +4,6 @@
       "fetch": "http://www.imdb.com/privacy",
       "select": "body",
       "validUntil": "2020-12-08T16:00:00.000Z"
-    },
-    {
-      "fetch": "http://www.imdb.com/privacy",
-      "select": "div#main",
-      "validUntil": "2025-05-29T06:07:41Z"
     }
   ],
   "Terms of Service": [
@@ -16,11 +11,6 @@
       "fetch": "https://www.imdb.com/conditions",
       "select": "body",
       "validUntil": "2020-12-08T16:00:00.000Z"
-    },
-    {
-      "fetch": "https://www.imdb.com/conditions",
-      "select": "div#main",
-      "validUntil": "2025-05-29T06:07:41Z"
     }
   ]
 }

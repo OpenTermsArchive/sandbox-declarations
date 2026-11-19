@@ -49,7 +49,7 @@
           "fetch": "https://telegram.org/tos/eu-dsa?setln=en",
           "select": [
             {
-              "startBefore": "[name=points-of-contact-for-member-states-authorities]",
+              "startBefore": "[name=contact-points-for-competent-authorities-in-eu-countries]",
               "endBefore": "[name=average-monthly-active-recipients-of-service-in-the-eu]"
             }
           ]

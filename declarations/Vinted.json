@@ -3,20 +3,12 @@
   "terms": {
     "Terms of Service": {
       "fetch": "https://www.vinted.com/terms_and_conditions",
-      "select": [
-        "#content h1",
-        "#content .user-created-content"
-      ],
-      "executeClientScripts": true
+      "select": "section#content"
     },
     "Privacy Policy": {
       "fetch": "https://www.vinted.com/privacy-policy",
       "select": [
-        "#content"
-      ],
-      "remove": [
-        ".web_ui__Button__button",
-        ".policy__contents-table"
+        "section#content"
       ],
       "executeClientScripts": true
     }

@@ -39,7 +39,7 @@
     "Data Controller Agreement": {
       "fetch": "https://privacy.google.com/businesses/controllerterms/",
       "select": [
-        "#page-content"
+        ".terms-page"
       ]
     },
     "Trackers Policy": {
@@ -48,8 +48,7 @@
     },
     "User Consent Policy": {
       "fetch": "https://www.google.com/about/company/user-consent-policy/",
-      "select": "#page-content",
-      "remove": ".card-list-b"
+      "select": ".page-section"
     }
   }
 }

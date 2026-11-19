@@ -3,18 +3,15 @@
   "importedFrom": "https://github.com/tosdr/tosback2/blob/f762cd4bbb2571272985fed009201a23300ba9b2/rules/starbucks.com.xml",
   "terms": {
     "Privacy Policy": {
-      "fetch": "https://www.starbucks.com/terms/privacy-notice",
+      "fetch": "https://www.starbucks.com/terms/privacy-policy/",
       "select": [
-        "#main-content"
-      ],
-      "remove": [
-        "a[href*=\"privacy.truste.com\"]"
+        ".sb-contentColumn"
       ]
     },
     "Terms of Service": {
       "fetch": "https://www.starbucks.com/terms/starbucks-terms-of-use",
       "select": [
-        "#main-content"
+        ".sb-contentColumn"
       ]
     }
   }

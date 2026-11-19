@@ -2,24 +2,21 @@
   "name": "Simpli.fi",
   "terms": {
     "Privacy Policy": {
-      "fetch": "https://simpli.fi/website-privacy-policy",
+      "fetch": "https://simpli.fi/site-privacy-policy/",
       "select": [
-        "standard-hero section section",
-        "div.flexible-wysiwyg"
+        ".default_template_content"
       ]
     },
     "Terms of Service": {
-      "fetch": "https://simpli.fi/terms",
+      "fetch": "https://simpli.fi/terms/",
       "select": [
-        "standard-hero section section",
-        "div.flexible-wysiwyg"
+        ".col-md-10"
       ]
     },
     "Trackers Policy": {
-      "fetch": "https://simpli.fi/cookie-policy",
+      "fetch": "https://simpli.fi/simpli-fi-cookie-policy/",
       "select": [
-        "standard-hero section section",
-        "div.flexible-wysiwyg"
+        ".default_template_content"
       ]
     }
   }

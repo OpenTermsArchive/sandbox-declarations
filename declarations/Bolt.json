@@ -8,13 +8,9 @@
       ]
     },
     "Privacy Policy": {
-      "fetch": "https://bolt.eu/en/privacy/rides/privacy-for-riders/",
+      "fetch": "https://bolt.eu/en/legal/ie/privacy-for-riders/",
       "select": [
         "main"
-      ],
-      "remove": [
-        "nav[aria-label=\"breadcrumb\"]",
-        "a[href*=\"/api/public-documents/download/\"]"
       ]
     }
   }

@@ -3,17 +3,19 @@
   "terms": {
     "Terms of Service": {
       "fetch": "https://vimeo.com/terms",
-      "select": [
-        "main h1",
-        "[data-content-ref-root]"
-      ]
+      "executeClientScripts": true,
+      "select": {
+        "startBefore": "#vimeo_terms_of_service",
+        "endAfter": "#legal_doc"
+      }
     },
     "Privacy Policy": {
       "fetch": "https://vimeo.com/privacy",
-      "select": [
-        "main h1",
-        "[data-content-ref-root]"
-      ]
+      "executeClientScripts": true,
+      "select": {
+        "startBefore": "#vimeo_privacy_policy",
+        "endAfter": "#legal_doc"
+      }
     }
   }
 }

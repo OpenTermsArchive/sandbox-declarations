@@ -4,19 +4,11 @@
   "terms": {
     "Terms of Service": {
       "fetch": "https://www.timeanddate.com/information/terms-conditions.html",
-      "select": [
-        "h1",
-        ".tad-layout-content__main"
-      ],
-      "executeClientScripts": true
+      "select": ".layout-grid__main"
     },
     "Privacy Policy": {
       "fetch": "https://www.timeanddate.com/information/privacy.html",
-      "select": [
-        "h1",
-        ".tad-layout-content__main"
-      ],
-      "executeClientScripts": true
+      "select": ".layout-grid__main"
     }
   }
 }

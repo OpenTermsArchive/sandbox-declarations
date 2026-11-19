@@ -3,12 +3,10 @@
   "terms": {
     "Review Guidelines": {
       "fetch": "https://developer.apple.com/app-store/review/guidelines/",
-      "select": [
-        "main"
-      ]
+      "select": "main"
     },
     "Developer Terms": {
-      "fetch": "https://developer.apple.com/support/downloads/terms/apple-developer-agreement/Apple-Developer-Agreement-20250318-English.pdf"
+      "fetch": "https://developer.apple.com/support/downloads/terms/apple-developer-agreement/Apple-Developer-Agreement-20240610-English.pdf"
     }
   }
 }

@@ -3,17 +3,6 @@
     {
       "fetch": "https://developer.apple.com/terms/apple-developer-agreement/Apple-Developer-Agreement-English.pdf",
       "validUntil": "2024-10-23T18:01:34Z"
-    },
-    {
-      "fetch": "https://developer.apple.com/support/downloads/terms/apple-developer-agreement/Apple-Developer-Agreement-20240610-English.pdf",
-      "validUntil": "2025-04-19T06:01:55Z"
-    }
-  ],
-  "Review Guidelines": [
-    {
-      "fetch": "https://developer.apple.com/app-store/review/guidelines/",
-      "select": "main",
-      "validUntil": "2026-11-18T17:27:10Z"
     }
   ]
 }

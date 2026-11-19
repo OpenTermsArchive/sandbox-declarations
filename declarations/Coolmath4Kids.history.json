@@ -7,14 +7,5 @@
       ],
       "validUntil": "2024-11-14T06:03:32Z"
     }
-  ],
-  "Copyright Claims Policy": [
-    {
-      "fetch": "https://www.coolmath4kids.com/fairuse",
-      "select": [
-        "#content"
-      ],
-      "validUntil": "2024-11-14T06:03:32Z"
-    }
   ]
 }

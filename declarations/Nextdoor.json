@@ -16,11 +16,8 @@
     "Community Guidelines": {
       "fetch": "https://help.nextdoor.com/s/article/community-guidelines?language=en_GB",
       "select": [
-        ".article-header",
-        ".article-body"
-      ],
-      "remove": [
-        ".tag-label"
+        ".article-head",
+        "#articlecontent"
       ],
       "executeClientScripts": true
     }
